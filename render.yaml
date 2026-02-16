@@ -1,5 +1,5 @@
 services:
-  # Backend Service
+  # Backend Service (Docker)
   - type: web
     name: webcache-backend
     env: docker
@@ -15,14 +15,12 @@ services:
       - key: FRONTEND_URL
         fromService:
           name: webcache-frontend
-          type: web
+          type: static_site
           property: url
 
-  # Frontend Service
-  - type: web
+  # Frontend Service (Static Site)
+  - type: static_site
     name: webcache-frontend
-    env: static
-    plan: free
     rootDirectory: frontend
     buildCommand: npm install && npm run build
     publishPath: dist
