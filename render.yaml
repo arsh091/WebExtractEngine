@@ -15,12 +15,13 @@ services:
       - key: FRONTEND_URL
         fromService:
           name: webcache-frontend
-          type: static_site
+          type: web
           property: url
 
   # Frontend Service (Static Site)
-  - type: static_site
+  - type: web
     name: webcache-frontend
+    env: static
     rootDirectory: frontend
     buildCommand: npm install && npm run build
     publishPath: dist
