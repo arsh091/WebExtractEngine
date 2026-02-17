@@ -1,6 +1,5 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import puppeteer from 'puppeteer';
 
 export const scrapeWebsite = async (url) => {
     // High-level safety timeout to prevent app hang
@@ -51,17 +50,33 @@ export const scrapeWebsite = async (url) => {
 const scrapeWithPuppeteer = async (url) => {
     let browser;
     try {
-        console.log(`[Puppeteer] Launching headless browser...`);
-        browser = await puppeteer.launch({
-            headless: 'new',
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--disable-gpu'
-            ]
-        });
+        console.log(`[Puppeteer] Launching browser...`);
+
+        const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
+
+        if (isVercel) {
+            const chromium = (await import('@sparticuz/chromium')).default;
+            const puppeteerCore = (await import('puppeteer-core')).default;
+
+            browser = await puppeteerCore.launch({
+                args: chromium.args,
+                defaultViewport: chromium.defaultViewport,
+                executablePath: await chromium.executablePath(),
+                headless: chromium.headless,
+                ignoreHTTPSErrors: true,
+            });
+        } else {
+            const puppeteer = (await import('puppeteer')).default;
+            browser = await puppeteer.launch({
+                headless: 'new',
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-gpu'
+                ]
+            });
+        }
 
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36');

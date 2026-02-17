@@ -51,10 +51,13 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.PORT ? '0.0.0.0' : 'localhost';
+
 console.log(`[Server] Environment: ${process.env.NODE_ENV}`);
+
 if (process.env.NODE_ENV !== 'test') {
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`Server running on port ${PORT}`);
+    app.listen(PORT, HOST, () => {
+        console.log(`Server running on http://${HOST}:${PORT}`);
     });
 } else {
     console.log('[Server] Running in test mode, skipping listen.');
