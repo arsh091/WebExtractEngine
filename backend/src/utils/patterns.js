@@ -23,3 +23,46 @@ export const addressPatterns = [
     // Generic City/State/Code
     '[A-Za-z0-9\\s,]{10,100}[,\\s]+[A-Za-z\\s]{2,20}[\\s,]+\\d{5,6}'
 ];
+
+// ═══ SOCIAL MEDIA PATTERNS ═══
+export const socialMediaPatterns = {
+    facebook: [
+        'https?://(?:www\\.)?facebook\\.com/[a-zA-Z0-9./_-]+',
+        'https?://(?:www\\.)?fb\\.com/[a-zA-Z0-9./_-]+'
+    ],
+    instagram: [
+        'https?://(?:www\\.)?instagram\\.com/[a-zA-Z0-9._]+/?',
+        '@([a-zA-Z0-9._]{2,30})'  // @username format
+    ],
+    twitter: [
+        'https?://(?:www\\.)?twitter\\.com/[a-zA-Z0-9_]+',
+        'https?://(?:www\\.)?x\\.com/[a-zA-Z0-9_]+'
+    ],
+    linkedin: [
+        'https?://(?:www\\.)?linkedin\\.com/(?:company|in)/[a-zA-Z0-9_-]+/?'
+    ],
+    youtube: [
+        'https?://(?:www\\.)?youtube\\.com/(?:channel|c|user|@)[a-zA-Z0-9_-]+'
+    ],
+    telegram: [
+        'https?://t\\.me/[a-zA-Z0-9_]+',
+        '@([a-zA-Z0-9_]{5,32})'
+    ],
+    pinterest: [
+        'https?://(?:www\\.)?pinterest\\.com/[a-zA-Z0-9_]+'
+    ],
+    tiktok: [
+        'https?://(?:www\\.)?tiktok\\.com/@[a-zA-Z0-9._]+'
+    ]
+};
+
+// ═══ WHATSAPP PATTERNS ═══
+export const whatsappPatterns = [
+    // wa.me links
+    'https?://wa\\.me/([0-9]+)',
+    'https?://api\\.whatsapp\\.com/send\\?phone=([0-9]+)',
+    // WhatsApp in text
+    'whatsapp[:\\s]+(?:\\+?[0-9]{10,15})',
+    // Click to chat
+    'https?://wa\\.me/message/[A-Z0-9]+'
+];

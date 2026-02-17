@@ -1,16 +1,14 @@
 import { scrapeWebsite } from '../services/scraper.js';
 import { validateUrl } from '../utils/validators.js';
-import {
-    extractPhones,
-    extractEmails,
-    extractAddresses
-} from '../services/extractor.js';
+import { extractPhones, extractEmails, extractAddresses } from '../services/extractor.js';
+import { extractCompanyInfo } from '../services/companyExtractor.js';
+import { extractSocialMedia } from '../services/socialExtractor.js';
 
 export const extractData = async (req, res) => {
     const startTime = Date.now();
+
     try {
         const { url } = req.body;
-        console.log(`[Controller] Received request for: ${url}`);
 
         if (!validateUrl(url)) {
             return res.status(400).json({
@@ -19,39 +17,52 @@ export const extractData = async (req, res) => {
             });
         }
 
-        console.log(`[Controller] Starting scrape...`);
-        const html = await scrapeWebsite(url);
-        console.log(`[Controller] Scrape finished. HTML length: ${html?.length || 0}`);
+        // Scrape website (now returns {text, html, url})
+        const scraped = await scrapeWebsite(url);
 
-        console.log(`[Controller] Extracting patterns...`);
-        const phones = extractPhones(html);
-        const emails = extractEmails(html);
-        const addresses = extractAddresses(html);
+        // === EXISTING EXTRACTIONS ===
+        const phones = extractPhones(scraped.text);
+        const emails = extractEmails(scraped.text);
+        const addresses = extractAddresses(scraped.text);
 
-        const duration = (Date.now() - startTime) / 1000;
-        console.log(`[Controller] Extraction complete in ${duration}s. Found: ${phones.length} phones, ${emails.length} emails, ${addresses.length} addresses.`);
+        // === NEW EXTRACTIONS ===
+        const companyInfo = extractCompanyInfo(scraped.html, url);
+        const socialMedia = extractSocialMedia(scraped.text + '\n' + scraped.html, scraped.html);
+
+        const processingTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
         res.json({
             success: true,
             data: {
-                phones: [...new Set(phones)], // Remove duplicates
-                emails: [...new Set(emails)],
-                addresses: [...new Set(addresses)]
+                // Existing
+                phones,
+                emails,
+                addresses,
+                // New
+                companyInfo,
+                socialMedia
             },
             count: {
                 phones: phones.length,
                 emails: emails.length,
-                addresses: addresses.length
+                addresses: addresses.length,
+                socialPlatforms: Object.values(socialMedia)
+                    .filter(v => v && (!Array.isArray(v) || v.length > 0)).length,
+                whatsapp: socialMedia.whatsapp?.length || 0,
+                total: phones.length + emails.length + addresses.length
             },
-            timestamp: new Date().toISOString()
+            metadata: {
+                url,
+                processingTime: processingTime + 's',
+                timestamp: new Date().toISOString()
+            }
         });
 
     } catch (error) {
-        const duration = (Date.now() - startTime) / 1000;
-        console.error(`[Controller] Extraction failed after ${duration}s:`, error);
+        console.error('❌ Extraction error:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Failed to extract data. Please check the URL and try again.'
+            error: 'Failed to extract data. Please try again.'
         });
     }
 };

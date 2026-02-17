@@ -28,7 +28,11 @@ export const scrapeWebsite = async (url) => {
 
                 if (text.trim().length > 1000) {
                     console.log(`[Scraper] Fast scrape successful (${text.length} chars)`);
-                    return text;
+                    return {
+                        text: text,
+                        html: response.data,
+                        url: url
+                    };
                 }
                 console.log(`[Scraper] Content too short (${text.length} chars), switching to browser...`);
             } catch (axiosErr) {
@@ -91,15 +95,22 @@ const scrapeWithPuppeteer = async (url) => {
         // Wait a small amount for any JS to finish rendering
         await new Promise(r => setTimeout(r, 2000));
 
-        const text = await page.evaluate(() => {
+        const result = await page.evaluate(() => {
+            const html = document.documentElement.outerHTML;
             const irrelevant = document.querySelectorAll('script, style, link, meta, iframe, noscript, footer, nav');
             irrelevant.forEach(el => el.remove());
-            return document.body.innerText;
+            const text = document.body.innerText;
+            return { text, html };
         });
 
-        const cleanedText = text.replace(/\s+/g, ' ');
+        const cleanedText = result.text.replace(/\s+/g, ' ');
         console.log(`[Puppeteer] Deep scrape successful (${cleanedText.length} chars)`);
-        return cleanedText;
+
+        return {
+            text: cleanedText,
+            html: result.html,
+            url: url
+        };
 
     } catch (err) {
         console.error(`[Puppeteer] Failed for ${url}: ${err.message}`);

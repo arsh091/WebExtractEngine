@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { FiPhone, FiMail, FiMapPin, FiCopy, FiCheckCircle, FiSearch, FiZap, FiTarget } from 'react-icons/fi';
+import { FiPhone, FiMail, FiMapPin, FiCopy, FiCheckCircle, FiSearch, FiZap, FiTarget, FiShare2 } from 'react-icons/fi';
 import ExportButtons from './ExportButtons';
+import CompanyHeader from './CompanyHeader';
+import SocialMediaCard from './SocialMediaCard';
 
 const ResultsDisplay = ({ data, onNotification }) => {
     const resultsRef = useRef(null);
-    const hasResults = (data.phones?.length || 0) + (data.emails?.length || 0) + (data.addresses?.length || 0) > 0;
+    const hasResults = (data.phones?.length || 0) + (data.emails?.length || 0) + (data.addresses?.length || 0) + (data.socialMedia ? 1 : 0) + (data.companyInfo ? 1 : 0) > 0;
 
     useEffect(() => {
         if (resultsRef.current) {
@@ -93,6 +95,10 @@ const ResultsDisplay = ({ data, onNotification }) => {
 
     return (
         <div ref={resultsRef} className="max-w-7xl mx-auto mt-20 space-y-10 pb-20 px-4">
+            {/* NEW: Company Header */}
+            {data.companyInfo && (
+                <CompanyHeader companyInfo={data.companyInfo} url={data.metadata?.url} />
+            )}
             {/* Efficiency Header */}
             <div className="flex flex-col md:flex-row justify-between items-center bg-gray-900 dark:bg-slate-900 border border-white/10 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl relative overflow-hidden group mb-12">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
@@ -121,7 +127,7 @@ const ResultsDisplay = ({ data, onNotification }) => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     icon={<FiPhone className="text-3xl text-primary-500" />}
                     title="Communication Nodes"
@@ -140,7 +146,21 @@ const ResultsDisplay = ({ data, onNotification }) => {
                     count={data.addresses?.length || 0}
                     color="purple"
                 />
+                <StatCard
+                    icon={<FiShare2 className="text-3xl text-pink-500" />}
+                    title="Digital Footprint"
+                    count={data.count?.socialPlatforms || 0}
+                    color="pink"
+                />
             </div>
+
+            {/* NEW: Social Media Card */}
+            {data.socialMedia && (
+                <SocialMediaCard
+                    socialMedia={data.socialMedia}
+                    onNotification={onNotification}
+                />
+            )}
 
             {/* Data Sections Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -198,7 +218,8 @@ const StatCard = ({ icon, title, count, color }) => {
     const colorStyles = {
         primary: "from-primary-500/10 to-primary-500/5 dark:from-primary-500/20 dark:to-primary-500/5",
         green: "from-green-500/10 to-green-500/5 dark:from-green-500/20 dark:to-green-500/5",
-        purple: "from-purple-500/10 to-purple-500/5 dark:from-purple-500/20 dark:to-purple-500/5"
+        purple: "from-purple-500/10 to-purple-500/5 dark:from-purple-500/20 dark:to-purple-500/5",
+        pink: "from-pink-500/10 to-pink-500/5 dark:from-pink-500/20 dark:to-pink-500/5"
     };
 
     return (
