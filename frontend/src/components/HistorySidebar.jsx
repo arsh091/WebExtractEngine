@@ -21,7 +21,7 @@ const HistorySidebar = ({ isOpen, onClose, history, onSelect, onClear }) => {
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-[70] border-l border-gray-200 dark:border-slate-800 flex flex-col"
+                        className="fixed right-0 top-0 h-full w-full sm:max-w-md bg-white dark:bg-slate-900 shadow-2xl z-[70] border-l border-gray-200 dark:border-slate-800 flex flex-col"
                     >
                         {/* Header */}
                         <div className="p-6 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">

@@ -90,8 +90,8 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
                     <button
                         type="submit"
                         disabled={loading || !url}
-                        className="flex-[2] bg-primary-500 hover:bg-primary-600 
-              text-white font-bold py-5 px-8 rounded-2xl 
+                        className="w-full sm:flex-[2] bg-primary-500 hover:bg-primary-600 
+              text-white font-bold py-4 md:py-5 px-6 md:px-8 rounded-2xl 
               hover:scale-[1.02] active:scale-95 
               disabled:opacity-50 disabled:cursor-not-allowed 
               transition-all duration-300 flex items-center justify-center gap-3 shadow-xl shadow-primary-500/25"
@@ -99,12 +99,12 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
                         {loading ? (
                             <>
                                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                                <span className="tracking-wide">ANALYZING SOURCE...</span>
+                                <span className="tracking-wide text-sm md:text-base">ANALYZING SOURCE...</span>
                             </>
                         ) : (
                             <>
-                                <FiSearch className="text-2xl" />
-                                <span className="tracking-wide">EXTRACT INTELLIGENCE</span>
+                                <FiSearch className="text-xl md:text-2xl" />
+                                <span className="tracking-wide text-sm md:text-base">EXTRACT INTELLIGENCE</span>
                             </>
                         )}
                     </button>
@@ -114,9 +114,9 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
                             type="button"
                             onClick={handleClear}
                             disabled={loading}
-                            className="flex-1 px-8 py-5 bg-gray-100 dark:bg-slate-800 
+                            className="w-full sm:flex-1 px-6 md:px-8 py-4 md:py-5 bg-gray-100 dark:bg-slate-800 
                 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-gray-200 dark:hover:bg-slate-700 
-                transition-all duration-300 flex items-center justify-center gap-2 border border-transparent hover:border-gray-300 dark:hover:border-slate-600 font-bold"
+                transition-all duration-300 flex items-center justify-center gap-2 border border-transparent hover:border-gray-300 dark:hover:border-slate-600 font-bold text-sm md:text-base"
                         >
                             <FiRefreshCw className={loading ? 'animate-spin' : ''} />
                             CLEAR

@@ -49,13 +49,13 @@ const ApiReference = () => {
                             <FiGlobe size={150} />
                         </div>
 
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10">
-                            <div className="flex items-center gap-3">
-                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${endpoint.method === 'POST' ? 'bg-orange-500/10 text-orange-500' : 'bg-green-500/10 text-green-500'
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10">
+                            <div className="flex items-center flex-wrap gap-3">
+                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter shrink-0 ${endpoint.method === 'POST' ? 'bg-orange-500/10 text-orange-500' : 'bg-green-500/10 text-green-500'
                                     }`}>
                                     {endpoint.method}
                                 </span>
-                                <h2 className="text-2xl font-mono font-bold text-gray-900 dark:text-white tracking-tight">
+                                <h2 className="text-xl md:text-2xl font-mono font-bold text-gray-900 dark:text-white tracking-tight break-all">
                                     {endpoint.path}
                                 </h2>
                             </div>
@@ -69,7 +69,7 @@ const ApiReference = () => {
                             <div className="flex items-center gap-2 text-xs font-bold text-gray-400 dark:text-slate-600 uppercase tracking-widest">
                                 <FiHash /> Request Payload (JSON)
                             </div>
-                            <pre className="p-6 bg-gray-50 dark:bg-black/50 border border-gray-100 dark:border-white/5 rounded-2xl font-mono text-sm text-gray-700 dark:text-slate-300">
+                            <pre className="p-4 md:p-6 bg-gray-50 dark:bg-black/50 border border-gray-100 dark:border-white/5 rounded-2xl font-mono text-xs md:text-sm text-gray-700 dark:text-slate-300 overflow-x-auto shadow-inner">
                                 {endpoint.params}
                             </pre>
                         </div>

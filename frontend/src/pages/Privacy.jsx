@@ -13,7 +13,7 @@ const Privacy = () => {
                     <FiLock /> Last Updated: February 17, 2026
                 </div>
 
-                <h1 className="text-5xl mb-8">Privacy Policy</h1>
+                <h1 className="text-4xl md:text-5xl mb-6 md:mb-8 font-black tracking-tighter">Privacy Policy</h1>
 
                 <p className="lead text-xl text-gray-500 dark:text-slate-400">
                     At WebExtract AI, we prioritize the integrity of your data and the transparency of our processing operations.

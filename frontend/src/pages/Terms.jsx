@@ -9,11 +9,11 @@ const Terms = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="prose prose-lg dark:prose-invert prose-headings:font-black prose-headings:tracking-tighter max-w-none"
             >
-                <div className="flex items-center gap-4 mb-8 not-prose">
-                    <div className="p-3 bg-gray-900 text-white rounded-2xl">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 md:mb-12 not-prose">
+                    <div className="p-3 bg-gray-900 text-white rounded-2xl w-fit">
                         <FiFileText size={32} />
                     </div>
-                    <h1 className="text-5xl m-0 font-black text-gray-900 dark:text-white tracking-tighter">Terms of Service</h1>
+                    <h1 className="text-4xl md:text-5xl m-0 font-black text-gray-900 dark:text-white tracking-tighter">Terms of Service</h1>
                 </div>
 
                 <div className="p-6 bg-orange-500/10 border border-orange-500/20 rounded-2xl mb-12 flex gap-4 not-prose">

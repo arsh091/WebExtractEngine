@@ -29,36 +29,38 @@ const ResultsDisplay = ({ data, onNotification }) => {
     };
 
     const DataSection = ({ icon, title, items, type }) => (
-        <div className="bg-white dark:bg-slate-900 shadow-xl rounded-3xl p-6 border border-gray-100 dark:border-white/10 hover:shadow-2xl transition-shadow duration-300">
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-gray-50 dark:bg-white/5 rounded-xl">
-                    {icon}
+        <div className="bg-white dark:bg-slate-900 shadow-xl rounded-[2rem] p-5 md:p-6 border border-gray-100 dark:border-white/10 hover:shadow-2xl transition-shadow duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-gray-50 dark:bg-white/5 rounded-xl shrink-0">
+                        {icon}
+                    </div>
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white italic tracking-tighter truncate">{title}</h3>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white italic tracking-tighter">{title}</h3>
-                <span className="ml-auto bg-primary-100 dark:bg-primary-500/20 text-primary-600 dark:text-primary-300 px-3 py-1 rounded-full text-[10px] font-black tracking-[0.2em] uppercase">
+                <span className="sm:ml-auto bg-primary-100 dark:bg-primary-500/20 text-primary-600 dark:text-primary-300 px-3 py-1 rounded-full text-[8px] md:text-[10px] font-black tracking-[0.2em] uppercase self-start sm:self-center">
                     {items.length} {items.length === 1 ? 'Node' : 'Nodes'}
                 </span>
             </div>
 
             {items.length > 0 ? (
-                <ul className="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar pr-2 font-mono">
+                <ul className="space-y-2 md:space-y-3 max-h-[300px] md:max-h-[350px] overflow-y-auto custom-scrollbar pr-2 font-mono">
                     {items.map((item, index) => (
                         <li
                             key={index}
-                            className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-white/5 
+                            className="flex items-center justify-between p-3 md:p-4 bg-gray-50/50 dark:bg-white/5 
                 rounded-xl hover:bg-white dark:hover:bg-white/10 transition-all duration-300 
                 group cursor-pointer border border-transparent hover:border-gray-200 dark:hover:border-white/10 shadow-sm hover:shadow-md"
                             onClick={() => copyToClipboard(item, type)}
                         >
-                            <span className="text-gray-600 dark:text-gray-300 break-all mr-4 text-xs font-semibold">{item}</span>
+                            <span className="text-gray-600 dark:text-gray-300 break-all mr-4 text-[10px] md:text-xs font-semibold">{item}</span>
                             <FiCopy className="text-gray-400 group-hover:text-primary-500 transition-colors shrink-0" />
                         </li>
                     ))}
                 </ul>
             ) : (
-                <div className="py-10 flex flex-col items-center justify-center text-center bg-gray-50/50 dark:bg-black/10 rounded-2xl border border-dashed border-gray-200 dark:border-white/5">
+                <div className="py-8 md:py-10 flex flex-col items-center justify-center text-center bg-gray-50/50 dark:bg-black/10 rounded-2xl border border-dashed border-gray-200 dark:border-white/5">
                     <FiSearch className="text-gray-300 dark:text-slate-700 text-3xl mb-3 opacity-50" />
-                    <p className="text-gray-400 dark:text-slate-500 italic text-xs uppercase tracking-widest font-bold">No intelligence detected in this sector</p>
+                    <p className="text-gray-400 dark:text-slate-500 italic text-[10px] uppercase tracking-widest font-bold">No intelligence detected</p>
                 </div>
             )}
         </div>
@@ -67,21 +69,21 @@ const ResultsDisplay = ({ data, onNotification }) => {
     if (!hasResults) {
         return (
             <div className="max-w-4xl mx-auto mt-20 text-center px-4">
-                <div className="p-12 md:p-20 bg-white dark:bg-slate-900 rounded-[3rem] border border-gray-100 dark:border-white/5 shadow-2xl relative overflow-hidden">
+                <div className="p-8 md:p-20 bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[3rem] border border-gray-100 dark:border-white/5 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-500 via-purple-500 to-pink-500"></div>
-                    <FiTarget className="text-primary-500/20 text-[10rem] absolute -bottom-10 -right-10 rotate-12" />
+                    <FiTarget className="text-primary-500/10 text-[6rem] md:text-[10rem] absolute -bottom-6 -right-6 md:-bottom-10 md:-right-10 rotate-12" />
                     <div className="relative z-10">
-                        <div className="w-20 h-20 bg-gray-50 dark:bg-black/20 rounded-3xl flex items-center justify-center mx-auto mb-8">
-                            <FiSearch className="text-primary-500 text-4xl" />
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-50 dark:bg-black/20 rounded-[1.5rem] md:rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8">
+                            <FiSearch className="text-primary-500 text-3xl md:text-4xl" />
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-6 tracking-tighter italic">Clean Architecture.</h2>
-                        <p className="text-xl text-gray-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed mb-8">
+                        <h2 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 md:mb-6 tracking-tighter italic">Clean Architecture.</h2>
+                        <p className="text-base md:text-xl text-gray-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed mb-6 md:mb-8 px-4">
                             Our engine completed a deep-scan of the target URL. While no structured contact points were identified,
                             the target infrastructure appears highly secure or abstract.
-                            <span className="block mt-4 text-primary-500 font-bold italic">Keep exploring! Every scan is a step toward better data intelligence.</span>
+                            <span className="block mt-4 text-primary-500 font-bold italic text-sm md:text-base">Keep exploring! Every scan is a step toward intelligence.</span>
                         </p>
-                        <div className="bg-gray-100 dark:bg-black/20 inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
-                            <FiZap className="text-yellow-500" /> Finished in {data.metadata?.duration?.toFixed(2) || '---'} seconds
+                        <div className="bg-gray-100 dark:bg-black/20 inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                            <FiZap className="text-yellow-500" /> {data.metadata?.duration?.toFixed(2) || '---'} seconds
                         </div>
                     </div>
                 </div>
@@ -92,28 +94,28 @@ const ResultsDisplay = ({ data, onNotification }) => {
     return (
         <div ref={resultsRef} className="max-w-7xl mx-auto mt-20 space-y-10 pb-20 px-4">
             {/* Efficiency Header */}
-            <div className="flex flex-col md:flex-row justify-between items-center bg-gray-900 dark:bg-slate-900 border border-white/10 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group mb-12">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-gray-900 dark:bg-slate-900 border border-white/10 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl relative overflow-hidden group mb-12">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
-                    <div className="p-4 bg-primary-500 rounded-2xl shadow-xl shadow-primary-500/20">
+                <div className="flex flex-col md:flex-row items-center text-center md:text-left gap-4 md:gap-6 relative z-10 w-full md:w-auto">
+                    <div className="p-4 bg-primary-500 rounded-2xl shadow-xl shadow-primary-500/20 shrink-0">
                         <FiCheckCircle className="text-white text-3xl" />
                     </div>
                     <div>
-                        <h2 className="text-3xl font-black text-white italic tracking-tighter mb-1">Analysis Complete.</h2>
-                        <p className="text-slate-400 text-sm font-bold uppercase tracking-widest leading-none">Intelligence Engine finalized operations successfully</p>
+                        <h2 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter mb-1">Analysis Complete.</h2>
+                        <p className="text-slate-400 text-[10px] md:text-sm font-bold uppercase tracking-widest leading-none">Intelligence Engine finalized operations</p>
                     </div>
                 </div>
-                <div className="mt-6 md:mt-0 flex items-center gap-8 relative z-10">
+                <div className="mt-8 md:mt-0 flex items-center justify-around md:justify-end gap-6 md:gap-8 relative z-10 w-full md:w-auto border-t border-white/5 md:border-t-0 pt-6 md:pt-0">
                     <div className="text-center">
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-1">Engine Speed</p>
-                        <p className="text-2xl font-black text-white italic tracking-tighter">
-                            {data.metadata?.duration?.toFixed(2) || '---'}<span className="text-xs ml-1 text-primary-500">sec</span>
+                        <p className="text-[8px] md:text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-1">Engine Speed</p>
+                        <p className="text-xl md:text-2xl font-black text-white italic tracking-tighter">
+                            {data.metadata?.duration?.toFixed(2) || '---'}<span className="text-[10px] md:text-xs ml-1 text-primary-500">sec</span>
                         </p>
                     </div>
-                    <div className="h-10 w-px bg-white/10"></div>
+                    <div className="h-10 w-px bg-white/10 hidden md:block"></div>
                     <div className="text-center">
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-1">Confidence</p>
-                        <p className="text-2xl font-black text-white italic tracking-tighter text-green-400">99.8%</p>
+                        <p className="text-[8px] md:text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mb-1">Confidence</p>
+                        <p className="text-xl md:text-2xl font-black text-white italic tracking-tighter text-green-400">99.8%</p>
                     </div>
                 </div>
             </div>
@@ -201,15 +203,15 @@ const StatCard = ({ icon, title, count, color }) => {
 
     return (
         <div className={`bg-white dark:bg-slate-900 bg-gradient-to-br ${colorStyles[color]} 
-      rounded-[2.5rem] p-8 border border-white dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden group`}>
+      rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 border border-white dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden group`}>
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-current opacity-5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-            <div className="flex items-center gap-6 relative z-10">
-                <div className="p-4 bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-50 dark:border-white/5 group-hover:rotate-6 transition-transform">
+            <div className="flex items-center gap-4 md:gap-6 relative z-10">
+                <div className="p-3 md:p-4 bg-white dark:bg-white/5 rounded-2xl shadow-lg border border-gray-50 dark:border-white/5 group-hover:rotate-6 transition-transform shrink-0">
                     {icon}
                 </div>
                 <div>
-                    <p className="text-gray-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">{title}</p>
-                    <p ref={countRef} className="text-4xl font-black text-gray-900 dark:text-white tabular-nums italic tracking-tighter">
+                    <p className="text-gray-500 dark:text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest mb-1">{title}</p>
+                    <p ref={countRef} className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white tabular-nums italic tracking-tighter shrink-0">
                         0
                     </p>
                 </div>

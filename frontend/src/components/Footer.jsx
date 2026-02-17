@@ -33,13 +33,13 @@ const Footer = () => {
                         </p>
                     </div>
                 </div>
-                <div className="pt-12 border-t border-gray-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <p className="text-gray-400 dark:text-slate-600 text-xs font-medium uppercase tracking-[0.2em]">
+                <div className="pt-12 border-t border-gray-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+                    <p className="text-gray-400 dark:text-slate-600 text-[10px] md:text-xs font-medium uppercase tracking-[0.2em]">
                         &copy; 2026 WEB EXTRACT ENGINE. ALL RIGHTS RESERVED.
                     </p>
-                    <div className="flex gap-8 text-gray-400 dark:text-slate-600 text-[10px] font-bold uppercase tracking-widest">
-                        <Link to="/privacy" className="hover:text-primary-500 transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-primary-500 transition-colors">Terms of Service</Link>
+                    <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-gray-400 dark:text-slate-600 text-[10px] font-bold uppercase tracking-widest">
+                        <Link to="/privacy" className="hover:text-primary-500 transition-colors">Privacy</Link>
+                        <Link to="/terms" className="hover:text-primary-500 transition-colors">Terms</Link>
                         <Link to="/security" className="hover:text-primary-500 transition-colors">Security</Link>
                     </div>
                 </div>
