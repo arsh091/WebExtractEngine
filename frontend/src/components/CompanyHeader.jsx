@@ -56,7 +56,7 @@ const CompanyHeader = ({ companyInfo, url }) => {
                         rel="noopener noreferrer"
                         className="text-primary-400 text-xs mt-3 px-3 py-1 bg-white/5 rounded-full hover:bg-white/10 transition-all inline-flex items-center gap-1.5 border border-white/5"
                     >
-                        <FiGlobe className="text-[10px]" /> {new URL(url).hostname}
+                        <FiGlobe className="text-[10px]" /> {getSafeHostname(url)}
                     </a>
                 </div>
             </div>
@@ -73,6 +73,15 @@ const CompanyHeader = ({ companyInfo, url }) => {
             )}
         </div>
     );
+};
+
+const getSafeHostname = (url) => {
+    try {
+        if (!url) return 'Unknown Host';
+        return new URL(url).hostname;
+    } catch (e) {
+        return url || 'Unknown Host';
+    }
 };
 
 export default CompanyHeader;
