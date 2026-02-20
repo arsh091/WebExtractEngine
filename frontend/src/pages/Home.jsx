@@ -1,12 +1,14 @@
 import { useRef, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { FiSearch, FiRefreshCw } from 'react-icons/fi';
 import Hero from '../components/Hero';
 import ExtractorForm from '../components/ExtractorForm';
 import ResultsDisplay from '../components/ResultsDisplay';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProgressBar from '../components/ProgressBar';
 import Toast from '../components/Toast';
+import BulkProcessor from '../components/BulkProcessor';
 
 import { useExtractor } from '../hooks/useExtractor';
 import { useHistory } from '../hooks/useHistory';
@@ -17,6 +19,7 @@ const Home = ({ onOpenHistory, addToHistory, isHistoryOpen }) => {
     const { loading, data, error, extractData, resetData } = useExtractor();
     const [progress, setProgress] = useState(0);
     const [toast, setToast] = useState(null);
+    const [activeTab, setActiveTab] = useState('single');
     const inputRef = useRef(null);
 
     // Auto-extract if URL param exists
@@ -98,37 +101,67 @@ const Home = ({ onOpenHistory, addToHistory, isHistoryOpen }) => {
             <Hero />
 
             <div className="container mx-auto px-4 md:px-6 -mt-10 md:-mt-20 relative z-10 pb-20 md:pb-32">
-                <ExtractorForm
-                    onExtract={handleExtract}
-                    onReset={handleReset}
-                    loading={loading}
-                    inputRef={inputRef}
-                />
-
-                <AnimatePresence>
-                    {loading && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="mt-12"
+                {/* Tab Switcher */}
+                <div className="flex justify-center mb-12">
+                    <div className="bg-slate-900/40 backdrop-blur-xl rounded-[1.5rem] p-1.5 flex gap-1.5 border border-white/5 shadow-2xl">
+                        <button
+                            onClick={() => setActiveTab('single')}
+                            className={`px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 flex items-center gap-2 ${activeTab === 'single'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                : 'text-slate-500 hover:text-white'
+                                }`}
                         >
-                            <ProgressBar progress={progress} />
-                            <LoadingSpinner />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                <div id="results-section">
-                    <AnimatePresence mode="wait">
-                        {data && !loading && (
-                            <ResultsDisplay
-                                data={data}
-                                onNotification={showNotification}
-                            />
-                        )}
-                    </AnimatePresence>
+                            <FiSearch className="text-sm" /> Single Intelligence
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('bulk')}
+                            className={`px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 flex items-center gap-2 ${activeTab === 'bulk'
+                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20'
+                                : 'text-slate-500 hover:text-white'
+                                }`}
+                        >
+                            <FiRefreshCw className="text-sm" /> Matrix Batch
+                        </button>
+                    </div>
                 </div>
+
+                {activeTab === 'single' ? (
+                    <>
+                        <ExtractorForm
+                            onExtract={handleExtract}
+                            onReset={handleReset}
+                            loading={loading}
+                            inputRef={inputRef}
+                        />
+
+                        <AnimatePresence>
+                            {loading && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="mt-12"
+                                >
+                                    <ProgressBar progress={progress} />
+                                    <LoadingSpinner />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <div id="results-section">
+                            <AnimatePresence mode="wait">
+                                {data && !loading && (
+                                    <ResultsDisplay
+                                        data={data}
+                                        onNotification={showNotification}
+                                    />
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </>
+                ) : (
+                    <BulkProcessor onNotification={showNotification} />
+                )}
 
                 <AnimatePresence>
                     {error && !loading && (

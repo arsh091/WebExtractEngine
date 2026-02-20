@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 
 // Import routes
 import extractRouter from './routes/extract.js';
+import bulkRouter from './routes/bulk.js';
 
 dotenv.config();
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/', limiter);
 
 // Routes
 app.use('/api/extract', extractRouter);
+app.use('/api/bulk', bulkRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
