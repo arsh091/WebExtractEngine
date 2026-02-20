@@ -3,13 +3,21 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import mongoose from 'mongoose';
 
 // Import routes
 import extractRouter from './routes/extract.js';
 import bulkRouter from './routes/bulk.js';
+import authRouter from './routes/auth.js';
+import historyRouter from './routes/history.js';
 
 dotenv.config();
 const app = express();
+
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ MongoDB connected'))
+    .catch(err => console.error('❌ MongoDB error:', err));
 
 // Middleware
 app.use(helmet());
@@ -37,6 +45,8 @@ app.use('/api/', limiter);
 // Routes
 app.use('/api/extract', extractRouter);
 app.use('/api/bulk', bulkRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/history', historyRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

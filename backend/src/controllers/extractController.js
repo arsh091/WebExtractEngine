@@ -3,6 +3,9 @@ import { validateUrl } from '../utils/validators.js';
 import { extractPhones, extractEmails, extractAddresses } from '../services/extractor.js';
 import { extractCompanyInfo } from '../services/companyExtractor.js';
 import { extractSocialMedia } from '../services/socialExtractor.js';
+import jwt from 'jsonwebtoken';
+import Extraction from '../models/Extraction.js';
+import User from '../models/User.js';
 
 export const extractData = async (req, res) => {
     const startTime = Date.now();
@@ -57,6 +60,34 @@ export const extractData = async (req, res) => {
                 timestamp: new Date().toISOString()
             }
         });
+
+        // Save to DB if logged in (Background)
+        try {
+            const authHeader = req.headers.authorization;
+            if (authHeader) {
+                const token = authHeader.split(' ')[1];
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-random-secret-key-min-32-chars-long');
+
+                await Extraction.create({
+                    userId: decoded.id,
+                    url,
+                    type: 'single',
+                    data: { phones, emails, addresses, companyInfo, socialMedia },
+                    count: {
+                        phones: phones.length,
+                        emails: emails.length,
+                        addresses: addresses.length,
+                        total: phones.length + emails.length + addresses.length
+                    },
+                    processingTime: processingTime + 's'
+                });
+
+                await User.findByIdAndUpdate(decoded.id, { $inc: { extractionCount: 1 } });
+            }
+        } catch (dbError) {
+            console.error('⚠️ DB Save Error:', dbError.message);
+            // Silent fail - don't break the response
+        }
 
     } catch (error) {
         console.error('❌ Extraction error:', error);

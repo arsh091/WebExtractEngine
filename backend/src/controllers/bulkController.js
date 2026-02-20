@@ -3,6 +3,9 @@ import { validateUrl } from '../utils/validators.js';
 import { extractPhones, extractEmails, extractAddresses } from '../services/extractor.js';
 import { extractCompanyInfo } from '../services/companyExtractor.js';
 import { extractSocialMedia } from '../services/socialExtractor.js';
+import jwt from 'jsonwebtoken';
+import Extraction from '../models/Extraction.js';
+import User from '../models/User.js';
 
 export const bulkExtract = async (req, res) => {
     const { urls } = req.body;
@@ -80,6 +83,31 @@ export const bulkExtract = async (req, res) => {
                 result,
                 percentage: Math.round((completed / validUrls.length) * 100)
             })}\n\n`);
+
+            // Save to DB in background if logged in
+            try {
+                const authHeader = req.headers.authorization;
+                if (authHeader) {
+                    const token = authHeader.split(' ')[1];
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-random-secret-key-min-32-chars-long');
+
+                    await Extraction.create({
+                        userId: decoded.id,
+                        url,
+                        type: 'bulk',
+                        data: result.data,
+                        count: {
+                            phones: result.data.phones.length,
+                            emails: result.data.emails.length,
+                            addresses: result.data.addresses.length,
+                            total: result.data.phones.length + result.data.emails.length + result.data.addresses.length
+                        }
+                    });
+                    await User.findByIdAndUpdate(decoded.id, { $inc: { extractionCount: 1 } });
+                }
+            } catch (dbError) {
+                console.error('⚠️ Bulk DB Save Error:', dbError.message);
+            }
 
         } catch (error) {
             const failedResult = {
