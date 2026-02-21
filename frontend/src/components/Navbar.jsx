@@ -2,15 +2,18 @@ import { useEffect, useRef, useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { HiLightningBolt, HiMenuAlt3 } from 'react-icons/hi';
-import { FiMoon, FiSun, FiClock, FiX } from 'react-icons/fi';
-import { ThemeContext } from '../context/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { FiMoon, FiSun, FiClock, FiX, FiUser, FiLogOut, FiDatabase } from 'react-icons/fi';
 
-const Navbar = ({ onOpenHistory }) => {
+import { ThemeContext } from '../context/ThemeContext';
+
+const Navbar = ({ onOpenHistory, onOpenAuth }) => {
     const logoRef = useRef(null);
     const navRef = useRef(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { theme, toggleTheme } = useContext(ThemeContext);
+    const { user, logout } = useAuth();
 
     useEffect(() => {
         gsap.fromTo(logoRef.current,
@@ -55,12 +58,34 @@ const Navbar = ({ onOpenHistory }) => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={onOpenHistory}
-                            className="p-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm border border-transparent"
-                        >
-                            <FiClock className="text-xl" />
-                        </button>
+                        {user ? (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={onOpenHistory}
+                                    className="p-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm border border-transparent flex items-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest"
+                                >
+                                    <FiDatabase className="text-xl" />
+                                    <span className="hidden md:block italic">Vault</span>
+                                </button>
+
+                                <div className="h-8 w-px bg-white/10 mx-1 hidden md:block"></div>
+
+                                <button
+                                    onClick={logout}
+                                    className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all shadow-sm border border-red-500/10 flex items-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest"
+                                >
+                                    <FiLogOut className="text-xl" />
+                                    <span className="hidden md:block italic">Signout</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={onOpenAuth}
+                                className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all"
+                            >
+                                <FiUser className="inline mr-2" /> Authenticate
+                            </button>
+                        )}
 
                         <button
                             onClick={toggleTheme}
@@ -68,10 +93,6 @@ const Navbar = ({ onOpenHistory }) => {
                         >
                             {theme === 'dark' ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
                         </button>
-
-                        <Link to="/docs" className="hidden sm:block bg-primary-500 hover:bg-primary-600 px-6 py-2.5 rounded-xl text-white font-bold transition-all shadow-lg shadow-primary-500/25">
-                            Docs
-                        </Link>
 
                         <button
                             className="lg:hidden p-2.5 rounded-xl bg-gray-900 text-white shadow-lg"

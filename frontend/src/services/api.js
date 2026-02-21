@@ -3,9 +3,11 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const extractDataFromUrl = async (url) => {
+    const token = localStorage.getItem('token');
     try {
         const response = await axios.post(`${API_URL}/extract`, { url }, {
-            timeout: 50000 // 50s frontend timeout
+            timeout: 50000, // 50s frontend timeout
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         console.log('API Response:', response.data);
         return response.data;

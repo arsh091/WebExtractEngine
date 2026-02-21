@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 
 // Pages
 import Home from './pages/Home';
@@ -12,7 +13,8 @@ import Security from './pages/Security';
 
 // Components
 import Layout from './components/Layout';
-import HistorySidebar from './components/HistorySidebar';
+import AuthModal from './components/AuthModal';
+import HistoryPage from './pages/HistoryPage';
 
 // Hooks
 import { useHistory } from './hooks/useHistory';
@@ -27,43 +29,52 @@ const ScrollToTop = () => {
 };
 
 function App() {
-    const { history, addToHistory, clearHistory } = useHistory();
-    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isAuthOpen, setIsAuthOpen] = useState(false);
+    const [view, setView] = useState('home'); // 'home' or 'history'
 
     return (
         <Router>
             <ScrollToTop />
-            <Layout onOpenHistory={() => setIsHistoryOpen(true)}>
-                <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            <Home
-                                onOpenHistory={() => setIsHistoryOpen(true)}
-                                addToHistory={addToHistory}
-                                isHistoryOpen={isHistoryOpen}
+            <Layout
+                onOpenAuth={() => setIsAuthOpen(true)}
+                onOpenHistory={() => setView('history')}
+            >
+                <div className="container mx-auto">
+                    {view === 'history' ? (
+                        <HistoryPage
+                            onBack={() => setView('home')}
+                            onReExtract={(url) => {
+                                setView('home');
+                                window.location.href = `/?url=${encodeURIComponent(url)}`;
+                            }}
+                        />
+                    ) : (
+                        <Routes>
+                            <Route
+                                path="/"
+                                element={
+                                    <Home
+                                        onOpenHistory={() => setView('history')}
+                                        addToHistory={() => { }} // History handled by DB now
+                                    />
+                                }
                             />
-                        }
-                    />
-                    <Route path="/docs" element={<Docs />} />
-                    <Route path="/api-reference" element={<ApiReference />} />
-                    <Route path="/community" element={<Community />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/security" element={<Security />} />
-                </Routes>
+                            <Route path="/docs" element={<Docs />} />
+                            <Route path="/api-reference" element={<ApiReference />} />
+                            <Route path="/community" element={<Community />} />
+                            <Route path="/privacy" element={<Privacy />} />
+                            <Route path="/terms" element={<Terms />} />
+                            <Route path="/security" element={<Security />} />
+                        </Routes>
+                    )}
+                </div>
             </Layout>
 
-            <HistorySidebar
-                isOpen={isHistoryOpen}
-                onClose={() => setIsHistoryOpen(false)}
-                history={history}
-                onSelect={(url) => {
-                    // Logic to handle selection from history on home page
-                    window.location.href = `/?url=${encodeURIComponent(url)}`;
-                }}
-                onClear={clearHistory}
-            />
+            <AnimatePresence>
+                {isAuthOpen && (
+                    <AuthModal onClose={() => setIsAuthOpen(false)} />
+                )}
+            </AnimatePresence>
         </Router>
     );
 }
