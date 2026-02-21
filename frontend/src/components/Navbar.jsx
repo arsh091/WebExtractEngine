@@ -8,7 +8,7 @@ import { FiMoon, FiSun, FiClock, FiX, FiUser, FiLogOut, FiDatabase } from 'react
 
 import { ThemeContext } from '../context/ThemeContext';
 
-const Navbar = ({ onOpenHistory, onOpenAuth }) => {
+const Navbar = ({ onOpenHistory, onOpenAuth, onOpenApi }) => {
     const logoRef = useRef(null);
     const navRef = useRef(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -52,9 +52,9 @@ const Navbar = ({ onOpenHistory, onOpenAuth }) => {
                 </Link>
 
                 <div className="flex items-center space-x-3 md:space-x-4">
-                    <div className="hidden lg:flex items-center space-x-6 mr-4 text-sm font-bold uppercase tracking-widest text-gray-500 dark:text-slate-400">
-                        <Link to="/api-reference" className="hover:text-primary-500 transition-colors uppercase">API</Link>
-                        <Link to="/community" className="hover:text-primary-500 transition-colors uppercase">Community</Link>
+                    <div className="hidden lg:flex items-center space-x-6 mr-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400">
+                        <button onClick={onOpenApi} className="hover:text-primary-500 transition-colors">API Terminal</button>
+                        <Link to="/community" className="hover:text-primary-500 transition-colors">Digital Community</Link>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -114,7 +114,12 @@ const Navbar = ({ onOpenHistory, onOpenAuth }) => {
                     >
                         <div className="flex flex-col space-y-8 text-center">
                             <Link to="/docs" onClick={() => setIsMenuOpen(false)} className="text-3xl font-black italic text-gray-900 dark:text-white uppercase tracking-tighter">Documentation</Link>
-                            <Link to="/api-reference" onClick={() => setIsMenuOpen(false)} className="text-3xl font-black italic text-gray-900 dark:text-white uppercase tracking-tighter">API Reference</Link>
+                            <button
+                                onClick={() => { onOpenApi(); setIsMenuOpen(false); }}
+                                className="text-3xl font-black italic text-gray-900 dark:text-white uppercase tracking-tighter"
+                            >
+                                API Interface
+                            </button>
                             <Link to="/community" onClick={() => setIsMenuOpen(false)} className="text-3xl font-black italic text-gray-900 dark:text-white uppercase tracking-tighter">Community Hub</Link>
                             <div className="pt-12 flex flex-col items-center gap-6">
                                 <Link to="/privacy" onClick={() => setIsMenuOpen(false)} className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none">Privacy Policy</Link>

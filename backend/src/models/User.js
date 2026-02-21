@@ -29,6 +29,17 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    apiKey: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    apiKeyCreatedAt: Date,
+    apiUsage: {
+        count: { type: Number, default: 0 },
+        lastUsed: Date,
+        monthlyCount: { type: Number, default: 0 }
+    },
     createdAt: {
         type: Date,
         default: Date.now

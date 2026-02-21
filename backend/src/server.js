@@ -10,6 +10,8 @@ import extractRouter from './routes/extract.js';
 import bulkRouter from './routes/bulk.js';
 import authRouter from './routes/auth.js';
 import historyRouter from './routes/history.js';
+import apiKeysRouter from './routes/apikeys.js';
+import publicApiRouter from './routes/publicApi.js';
 
 dotenv.config();
 const app = express();
@@ -47,6 +49,8 @@ app.use('/api/extract', extractRouter);
 app.use('/api/bulk', bulkRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/history', historyRouter);
+app.use('/api/apikeys', apiKeysRouter);
+app.use('/api/v1', publicApiRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

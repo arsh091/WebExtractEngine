@@ -15,6 +15,7 @@ import Security from './pages/Security';
 import Layout from './components/Layout';
 import AuthModal from './components/AuthModal';
 import HistoryPage from './pages/HistoryPage';
+import ApiDocsPage from './pages/ApiDocsPage';
 
 // Hooks
 import { useHistory } from './hooks/useHistory';
@@ -30,7 +31,7 @@ const ScrollToTop = () => {
 
 function App() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
-    const [view, setView] = useState('home'); // 'home' or 'history'
+    const [view, setView] = useState('home'); // 'home', 'history', 'api'
 
     return (
         <Router>
@@ -38,6 +39,7 @@ function App() {
             <Layout
                 onOpenAuth={() => setIsAuthOpen(true)}
                 onOpenHistory={() => setView('history')}
+                onOpenApi={() => setView('api')}
             >
                 <div className="container mx-auto">
                     {view === 'history' ? (
@@ -48,6 +50,8 @@ function App() {
                                 window.location.href = `/?url=${encodeURIComponent(url)}`;
                             }}
                         />
+                    ) : view === 'api' ? (
+                        <ApiDocsPage onBack={() => setView('home')} />
                     ) : (
                         <Routes>
                             <Route
