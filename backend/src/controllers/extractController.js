@@ -89,10 +89,10 @@ export const extractData = async (req, res) => {
         }
 
     } catch (error) {
-        console.error('❌ Extraction error:', error);
+        console.error('Extraction Error:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to extract data. Please try again.'
+            error: error.message || 'Failed to extract data. Please try again.'
         });
     }
 };
