@@ -21,6 +21,8 @@ app.use(helmet());
 
 const allowedOrigins = [
     'https://web-extract-engine.vercel.app',
+    'https://webextractengine.onrender.com',
+    'https://web-extract-engine.onrender.com',
     'http://localhost:3000',
     'http://localhost:5173',
     process.env.FRONTEND_URL
@@ -28,13 +30,20 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // allow requests with no origin (like mobile apps or curl requests)
+        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            return callback(new Error(msg), false);
+
+        // Check if origin is in our list OR is a vercel.app subdomain
+        const isAllowed = allowedOrigins.includes(origin) ||
+            origin.endsWith('.vercel.app') ||
+            origin.includes('localhost');
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            console.log('CORS Blocked for:', origin);
+            callback(new Error('Not allowed by CORS'), false);
         }
-        return callback(null, true);
     },
     credentials: true
 }));
