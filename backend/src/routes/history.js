@@ -25,27 +25,32 @@ router.get('/', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
 
-        const historyRef = db.collection('extractions');
-        const snapshot = await historyRef
+        let query = db.collection('extractions')
             .where('userId', '==', req.uid)
-            .orderBy('createdAt', 'desc')
-            .limit(limit)
-            // Note: StartAfter could be added for better pagination
-            .get();
+            .orderBy('createdAt', 'desc');
 
-        const extractions = [];
+        // Simple search logic - fetch all for user and filter in memory if searching 
+        // (Firestore doesn't support easy case-insensitive contains search)
+        // For production, we'd use a better search index like Algolia
+
+        let snapshot = await query.get();
+        let extractions = [];
         snapshot.forEach(doc => {
-            extractions.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            if (!search || (data.url && data.url.toLowerCase().includes(search.toLowerCase()))) {
+                extractions.push({ id: doc.id, ...data });
+            }
         });
 
-        // Simplified total count for Firebase (can use separate counter in prod)
-        const totalSnapshot = await historyRef.where('userId', '==', req.uid).count().get();
-        const total = totalSnapshot.data().count;
+        const total = extractions.length;
+        const start = (page - 1) * limit;
+        const paginatedExtractions = extractions.slice(start, start + limit);
 
         res.json({
             success: true,
-            data: extractions,
+            data: paginatedExtractions,
             pagination: {
                 page,
                 limit,

@@ -4,10 +4,22 @@ import { FiGlobe, FiCornerDownRight, FiHash, FiActivity } from 'react-icons/fi';
 const ApiReference = () => {
     const endpoints = [
         {
+            method: 'GET',
+            path: '/api/v1/extract',
+            desc: 'Extract structured intelligence from a Target URL. Requires API key.',
+            params: 'Query Parameters:\n - url: string (required)\n - fields: string (optional, e.g., "phones,emails")'
+        },
+        {
             method: 'POST',
-            path: '/api/extract',
-            desc: 'Extract structured intelligence from a Target URL.',
-            params: '{ "url": "https://example.com" }'
+            path: '/api/v1/bulk',
+            desc: 'Batch processing for up to 10 URLs in a single payload.',
+            params: 'Body: { "urls": ["https://site-a.com", "https://site-b.com"] }'
+        },
+        {
+            method: 'GET',
+            path: '/api/v1/usage',
+            desc: 'Check your current API consumption and quotas.',
+            params: 'null'
         },
         {
             method: 'GET',

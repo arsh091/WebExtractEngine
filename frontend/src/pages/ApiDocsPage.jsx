@@ -7,7 +7,7 @@ import axios from 'axios';
 const CODE_EXAMPLES = {
     javascript: `// JavaScript Fetch Example
 const response = await fetch(
-  'https://your-api.onrender.com/api/v1/extract?url=https://example.com',
+  'https://webextractengine.onrender.com/api/v1/extract?url=https://example.com',
   {
     headers: {
       'x-api-key': 'wxe_live_your_api_key_here'
@@ -16,26 +16,26 @@ const response = await fetch(
 );
 
 const data = await response.json();
-console.log(data.data.phones);   // Phone numbers
-console.log(data.data.emails);   // Emails
-console.log(data.data.company);  // Company info`,
+const { phones, emails, company } = data.data;
+console.log('Intelligence Gathering Complete:', { phones, emails, company });`,
 
     python: `# Python Requests Example
 import requests
 
-response = requests.get(
-    'https://your-api.onrender.com/api/v1/extract',
-    params={'url': 'https://example.com'},
-    headers={'x-api-key': 'wxe_live_your_api_key_here'}
-)
+api_url = 'https://webextractengine.onrender.com/api/v1/extract'
+params = {'url': 'https://example.com'}
+headers = {'x-api-key': 'wxe_live_your_api_key_here'}
 
+response = requests.get(api_url, params=params, headers=headers)
 data = response.json()
-print(data['data']['phones'])   # Phone numbers
-print(data['data']['emails'])   # Emails`,
+
+if data['success']:
+    print(f"Found {data['data']['count']['phones']} phone nodes")
+    print(f"Emails: {data['data']['emails']}")`,
 
     curl: `# cURL Terminal Example
 curl -X GET \\
-  "https://your-api.onrender.com/api/v1/extract?url=https://example.com" \\
+  "https://webextractengine.onrender.com/api/v1/extract?url=https://example.com" \\
   -H "x-api-key: wxe_live_your_api_key_here"`,
 };
 
@@ -75,8 +75,26 @@ const ApiDocsPage = ({ onBack }) => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setApiKey(res.data.apiKey);
+            onNotification?.('Secret Key Generated Successfully', 'success');
         } catch (err) {
             console.error('Key generation failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const revokeKey = async () => {
+        if (!token || !confirm('Permanently revoke these credentials? Active integrations will fail.')) return;
+        setLoading(true);
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            await axios.delete(`${API_URL}/apikeys/revoke`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setApiKey('');
+            setUsage(null);
+        } catch (err) {
+            console.error('Revocation failed');
         } finally {
             setLoading(false);
         }
@@ -98,9 +116,9 @@ const ApiDocsPage = ({ onBack }) => {
             <div className="text-center mb-16 pt-10 relative">
                 <button
                     onClick={onBack}
-                    className="absolute left-0 top-10 flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
+                    className="absolute left-0 top-10 flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest group"
                 >
-                    <FiTerminal className="rotate-180" /> Return to Base
+                    <FiTerminal className="rotate-180 group-hover:-translate-x-1 transition-transform" /> Return to Base
                 </button>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20 mb-6">
                     <FiZap className="text-blue-500 animate-pulse" />
@@ -145,6 +163,13 @@ const ApiDocsPage = ({ onBack }) => {
                                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Usage Cycles</span>
                                         <span className="text-[10px] font-black text-white uppercase tracking-widest">{usage?.total || 0} Total</span>
                                     </div>
+                                    <button
+                                        onClick={revokeKey}
+                                        disabled={loading}
+                                        className="w-full py-3 bg-red-500/10 text-red-500 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-red-500/20 transition-all border border-red-500/10"
+                                    >
+                                        Revoke Node Access
+                                    </button>
                                 </div>
                             </div>
                         ) : (

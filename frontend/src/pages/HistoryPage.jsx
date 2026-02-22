@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { FiTrash2, FiHeart, FiRefreshCw, FiClock, FiGrid, FiArrowLeft, FiSearch, FiCode } from 'react-icons/fi';
+import { FiTrash2, FiHeart, FiRefreshCw, FiClock, FiGrid, FiArrowLeft, FiSearch, FiCode, FiX, FiMail } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -13,16 +13,21 @@ const HistoryPage = ({ onReExtract, onBack }) => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [stats, setStats] = useState({ total: 0 });
+    const [search, setSearch] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
 
     useEffect(() => {
-        fetchHistory();
-    }, [page, token]);
+        const timer = setTimeout(() => {
+            fetchHistory();
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [page, token, search]);
 
     const fetchHistory = async () => {
         if (!token) return;
         try {
             setLoading(true);
-            const res = await axios.get(`${API_URL}/history?page=${page}&limit=10`, {
+            const res = await axios.get(`${API_URL}/history?page=${page}&limit=10&search=${search}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setHistory(res.data.data);
@@ -75,7 +80,7 @@ const HistoryPage = ({ onReExtract, onBack }) => {
         }
     };
 
-    if (loading && page === 1) {
+    if (loading && page === 1 && !search) {
         return (
             <div className="flex flex-col items-center justify-center py-40">
                 <div className="relative w-20 h-20">
@@ -112,15 +117,27 @@ const HistoryPage = ({ onReExtract, onBack }) => {
                     </div>
                 </div>
 
-                {history.length > 0 && (
-                    <button
-                        onClick={clearAllHistory}
-                        className="group flex items-center gap-3 px-6 py-3.5 bg-red-500/10 
-              text-red-500 rounded-2xl hover:bg-red-500/20 transition-all border border-red-500/10 text-[10px] font-black uppercase tracking-widest"
-                    >
-                        <FiTrash2 className="group-hover:rotate-12 transition-transform" /> Purge Matrix Archive
-                    </button>
-                )}
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                    <div className="relative w-full sm:w-64">
+                        <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            placeholder="Filter by target URL..."
+                            className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-bold text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 transition-all uppercase tracking-widest"
+                        />
+                    </div>
+                    {history.length > 0 && (
+                        <button
+                            onClick={clearAllHistory}
+                            className="group flex items-center gap-3 px-6 py-3.5 bg-red-500/10 
+                text-red-500 rounded-2xl hover:bg-red-500/20 transition-all border border-red-500/10 text-[10px] font-black uppercase tracking-widest"
+                        >
+                            <FiTrash2 className="group-hover:rotate-12 transition-transform" /> Purge Matrix Archive
+                        </button>
+                    )}
+                </div>
             </div>
 
             {history.length === 0 ? (
@@ -147,7 +164,8 @@ const HistoryPage = ({ onReExtract, onBack }) => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{ delay: index * 0.05 }}
-                                className="group relative bg-slate-900/50 backdrop-blur-3xl rounded-[2rem] p-6 border border-white/5 hover:border-blue-500/30 transition-all hover:shadow-2xl hover:shadow-blue-500/5"
+                                className="group relative bg-slate-900/50 backdrop-blur-3xl rounded-[2rem] p-6 border border-white/5 hover:border-blue-500/30 transition-all hover:shadow-2xl hover:shadow-blue-500/5 cursor-pointer"
+                                onClick={() => setSelectedItem(item)}
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0">
@@ -179,7 +197,7 @@ const HistoryPage = ({ onReExtract, onBack }) => {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
                                         <button
                                             onClick={() => toggleFavorite(item.id)}
                                             className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all border ${item.isFavorite
@@ -257,6 +275,121 @@ const HistoryPage = ({ onReExtract, onBack }) => {
                     </button>
                 </div>
             )}
+
+            {/* Detail Modal */}
+            <AnimatePresence>
+                {selectedItem && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-slate-900 border border-white/10 rounded-[3rem] p-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl"
+                        >
+                            <div className="flex justify-between items-start mb-10">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-3">
+                                        {selectedItem.data?.companyInfo?.favicon ? (
+                                            <img src={selectedItem.data.companyInfo.favicon} alt="" className="w-full h-full object-contain" />
+                                        ) : (
+                                            <FiGrid className="text-3xl text-slate-600" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-3xl font-black text-white italic tracking-tighter mb-1">
+                                            {selectedItem.data?.companyInfo?.name || 'Extraction Data'}
+                                        </h3>
+                                        <p className="text-slate-500 font-mono text-xs">{selectedItem.url}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedItem(null)}
+                                    className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-all"
+                                >
+                                    <FiX className="text-xl" />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Left Column: Contact Data */}
+                                <div className="space-y-6">
+                                    <section className="bg-white/5 rounded-3xl p-6 border border-white/5">
+                                        <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                            <FiClock /> Communication Nodes (Phones)
+                                        </h4>
+                                        <div className="space-y-2">
+                                            {selectedItem.data?.phones?.length > 0 ? (
+                                                selectedItem.data.phones.map((p, i) => (
+                                                    <div key={i} className="font-mono text-sm text-white bg-black/20 p-3 rounded-xl border border-white/5">
+                                                        {p}
+                                                    </div>
+                                                ))
+                                            ) : <p className="text-slate-600 italic text-xs">No phone nodes detected.</p>}
+                                        </div>
+                                    </section>
+
+                                    <section className="bg-white/5 rounded-3xl p-6 border border-white/5">
+                                        <h4 className="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                            <FiMail /> Digital Mailboxes (Emails)
+                                        </h4>
+                                        <div className="space-y-2">
+                                            {selectedItem.data?.emails?.length > 0 ? (
+                                                selectedItem.data.emails.map((e, i) => (
+                                                    <div key={i} className="font-mono text-sm text-white bg-black/20 p-3 rounded-xl border border-white/5 break-all">
+                                                        {e}
+                                                    </div>
+                                                ))
+                                            ) : <p className="text-slate-600 italic text-xs">No email nodes detected.</p>}
+                                        </div>
+                                    </section>
+                                </div>
+
+                                {/* Right Column: Meta & Social */}
+                                <div className="space-y-6">
+                                    <section className="bg-white/5 rounded-3xl p-6 border border-white/5 text-xs">
+                                        <h4 className="text-[10px] font-black text-green-500 uppercase tracking-widest mb-4">Enterprise Insights</h4>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between border-b border-white/5 pb-2">
+                                                <span className="text-slate-500">Industry</span>
+                                                <span className="text-white font-bold">{selectedItem.data?.companyInfo?.industry || 'Unknown'}</span>
+                                            </div>
+                                            <div className="flex justify-between border-b border-white/5 pb-2">
+                                                <span className="text-slate-500">Timestamp</span>
+                                                <span className="text-white font-bold">{new Date(selectedItem.createdAt).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500">Extraction Node</span>
+                                                <span className="text-blue-500 font-black uppercase tracking-widest text-[9px]">Production v1.2</span>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section className="bg-white/5 rounded-3xl p-6 border border-white/5">
+                                        <h4 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4">Social Identity Graph</h4>
+                                        <div className="grid grid-cols-2 gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            {selectedItem.data?.socialMedia && Object.entries(selectedItem.data.socialMedia).map(([platform, val]) => (
+                                                val ? (
+                                                    <div key={platform} className="bg-black/20 p-3 rounded-xl border border-white/5 text-blue-400">
+                                                        {platform} Found
+                                                    </div>
+                                                ) : null
+                                            ))}
+                                            {!selectedItem.data?.socialMedia && <p className="col-span-2 text-slate-600 italic">No social nodes available.</p>}
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setSelectedItem(null)}
+                                className="w-full mt-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl shadow-2xl active:scale-[0.98] transition-all"
+                            >
+                                Secure Vault & Close
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };
