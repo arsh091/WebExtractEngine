@@ -40,7 +40,7 @@ const HistoryPage = ({ onReExtract, onBack }) => {
             await axios.delete(`${API_URL}/history/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setHistory(history.filter(h => h._id !== id));
+            setHistory(history.filter(h => h.id !== id));
             setStats(prev => ({ total: prev.total - 1 }));
         } catch (error) {
             console.error('Delete failed:', error);
@@ -55,7 +55,7 @@ const HistoryPage = ({ onReExtract, onBack }) => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setHistory(history.map(h =>
-                h._id === id ? { ...h, isFavorite: res.data.isFavorite } : h
+                h.id === id ? { ...h, isFavorite: res.data.isFavorite } : h
             ));
         } catch (error) {
             console.error('Favorite toggle failed:', error);
@@ -142,7 +142,7 @@ const HistoryPage = ({ onReExtract, onBack }) => {
                     <AnimatePresence mode="popLayout">
                         {history.map((item, index) => (
                             <motion.div
-                                key={item._id}
+                                key={item.id}
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
@@ -181,10 +181,10 @@ const HistoryPage = ({ onReExtract, onBack }) => {
 
                                     <div className="flex flex-col gap-2">
                                         <button
-                                            onClick={() => toggleFavorite(item._id)}
+                                            onClick={() => toggleFavorite(item.id)}
                                             className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all border ${item.isFavorite
-                                                    ? 'text-pink-500 bg-pink-500/10 border-pink-500/20'
-                                                    : 'text-slate-600 bg-white/5 border-white/10 hover:text-white hover:border-white/20'
+                                                ? 'text-pink-500 bg-pink-500/10 border-pink-500/20'
+                                                : 'text-slate-600 bg-white/5 border-white/10 hover:text-white hover:border-white/20'
                                                 }`}
                                         >
                                             <FiHeart className={item.isFavorite ? 'fill-current' : ''} />
@@ -197,7 +197,7 @@ const HistoryPage = ({ onReExtract, onBack }) => {
                                             <FiRefreshCw />
                                         </button>
                                         <button
-                                            onClick={() => deleteExtraction(item._id)}
+                                            onClick={() => deleteExtraction(item.id)}
                                             className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-slate-600 flex items-center justify-center hover:text-red-500 hover:border-red-500/30 hover:bg-red-500/10 transition-all"
                                         >
                                             <FiTrash2 />
@@ -240,8 +240,8 @@ const HistoryPage = ({ onReExtract, onBack }) => {
                                 key={p}
                                 onClick={() => setPage(p)}
                                 className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${page === p
-                                        ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
-                                        : 'bg-white/5 text-slate-500 hover:text-white hover:bg-white/10'
+                                    ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
+                                    : 'bg-white/5 text-slate-500 hover:text-white hover:bg-white/10'
                                     }`}
                             >
                                 {p}

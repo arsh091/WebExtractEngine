@@ -2,8 +2,7 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-export const extractDataFromUrl = async (url) => {
-    const token = localStorage.getItem('token');
+export const extractDataFromUrl = async (url, token = null) => {
     try {
         const response = await axios.post(`${API_URL}/extract`, { url }, {
             timeout: 50000, // 50s frontend timeout

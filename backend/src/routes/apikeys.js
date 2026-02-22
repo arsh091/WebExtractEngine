@@ -1,17 +1,18 @@
 import express from 'express';
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { db, auth, admin } from '../config/firebase.js';
 
 const router = express.Router();
 
-// Auth middleware
-const auth = async (req, res, next) => {
+// Auth middleware for Firebase
+const verifyFirebaseToken = async (req, res, next) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ success: false, error: 'Please login' });
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-random-secret-key-min-32-chars-long');
-        req.userId = decoded.id;
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ success: false, error: 'Please login' });
+
+        const token = authHeader.split(' ')[1];
+        const decodedToken = await auth.verifyIdToken(token);
+        req.uid = decodedToken.uid;
         next();
     } catch {
         res.status(401).json({ success: false, error: 'Invalid token' });
@@ -19,20 +20,19 @@ const auth = async (req, res, next) => {
 };
 
 // Generate API Key
-router.post('/generate', auth, async (req, res) => {
+router.post('/generate', verifyFirebaseToken, async (req, res) => {
     try {
-        // Generate unique API key: wxe_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         const apiKey = 'wxe_live_' + crypto.randomBytes(24).toString('hex');
 
-        await User.findByIdAndUpdate(req.userId, {
+        await db.collection('users').doc(req.uid).update({
             apiKey,
-            apiKeyCreatedAt: new Date()
+            apiKeyCreatedAt: new Date().toISOString()
         });
 
         res.json({
             success: true,
             apiKey,
-            message: 'Keep this key secret! It grants access to your account.'
+            message: 'Keep this key secret!'
         });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -40,23 +40,33 @@ router.post('/generate', auth, async (req, res) => {
 });
 
 // Get API Key info
-router.get('/info', auth, async (req, res) => {
+router.get('/info', verifyFirebaseToken, async (req, res) => {
     try {
-        const user = await User.findById(req.userId).select('apiKey apiKeyCreatedAt apiUsage');
-        res.json({ success: true, data: user });
+        const doc = await db.collection('users').doc(req.uid).get();
+        if (!doc.exists) return res.status(404).json({ success: false, error: 'User not found' });
+
+        const data = doc.data();
+        res.json({
+            success: true,
+            data: {
+                apiKey: data.apiKey,
+                apiKeyCreatedAt: data.apiKeyCreatedAt,
+                apiUsage: data.apiUsage || { count: 0, monthlyCount: 0 }
+            }
+        });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // Revoke API Key
-router.delete('/revoke', auth, async (req, res) => {
+router.delete('/revoke', verifyFirebaseToken, async (req, res) => {
     try {
-        await User.findByIdAndUpdate(req.userId, {
-            $unset: { apiKey: 1 },
-            apiKeyCreatedAt: null
+        await db.collection('users').doc(req.uid).update({
+            apiKey: admin.firestore.FieldValue.delete(),
+            apiKeyCreatedAt: admin.firestore.FieldValue.delete()
         });
-        res.json({ success: true, message: 'API key revoked successfully' });
+        res.json({ success: true, message: 'API key revoked' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { extractDataFromUrl } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export const useExtractor = () => {
+    const { token } = useAuth();
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
@@ -12,7 +14,7 @@ export const useExtractor = () => {
         const startTime = performance.now();
 
         try {
-            const result = await extractDataFromUrl(url);
+            const result = await extractDataFromUrl(url, token);
             const duration = (performance.now() - startTime) / 1000;
             const enhancedData = {
                 ...result.data,

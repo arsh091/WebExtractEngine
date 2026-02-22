@@ -22,7 +22,9 @@ const AuthModal = ({ onClose }) => {
             }
             onClose();
         } catch (err) {
-            setError(err.response?.data?.error || 'Something went wrong');
+            console.error("Auth Error Detail:", err);
+            const message = err.response?.data?.error || err.message || 'Something went wrong';
+            setError(message);
         } finally {
             setLoading(false);
         }

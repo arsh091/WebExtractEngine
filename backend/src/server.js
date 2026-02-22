@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
-import mongoose from 'mongoose';
+import './config/firebase.js'; // Initialize Firebase Admin
 
 // Import routes
 import extractRouter from './routes/extract.js';
@@ -16,15 +16,26 @@ import publicApiRouter from './routes/publicApi.js';
 dotenv.config();
 const app = express();
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ MongoDB connected'))
-    .catch(err => console.error('❌ MongoDB error:', err));
-
 // Middleware
 app.use(helmet());
+
+const allowedOrigins = [
+    'https://web-extract-engine.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     credentials: true
 }));
 app.use(express.json());
@@ -38,7 +49,7 @@ app.use((req, res, next) => {
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
-    max: 10, // 10 requests per minute
+    max: 20, // Increased for bulk 
     message: 'Too many requests, please try again later.'
 });
 
@@ -54,7 +65,7 @@ app.use('/api/v1', publicApiRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Server is running' });
+    res.json({ status: 'OK', message: 'Backend is running with Firebase Node' });
 });
 
 // Error handling middleware
@@ -75,8 +86,6 @@ if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, HOST, () => {
         console.log(`Server running on http://${HOST}:${PORT}`);
     });
-} else {
-    console.log('[Server] Running in test mode, skipping listen.');
 }
 
 export default app;

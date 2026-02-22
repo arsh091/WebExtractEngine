@@ -3,41 +3,21 @@ import { validateUrl } from '../utils/validators.js';
 import { extractPhones, extractEmails, extractAddresses } from '../services/extractor.js';
 import { extractCompanyInfo } from '../services/companyExtractor.js';
 import { extractSocialMedia } from '../services/socialExtractor.js';
-import jwt from 'jsonwebtoken';
-import Extraction from '../models/Extraction.js';
-import User from '../models/User.js';
+import { db, auth, admin } from '../config/firebase.js';
 
 export const bulkExtract = async (req, res) => {
     const { urls } = req.body;
 
-    // Validate input
     if (!Array.isArray(urls) || urls.length === 0) {
-        return res.status(400).json({
-            success: false,
-            error: 'Please provide an array of URLs'
-        });
+        return res.status(400).json({ success: false, error: 'Please provide an array of URLs' });
     }
 
-    if (urls.length > 20) {
-        return res.status(400).json({
-            success: false,
-            error: 'Maximum 20 URLs allowed per bulk request'
-        });
-    }
-
-    // Filter valid URLs
     const validUrls = urls.filter(url => validateUrl(url));
-
     if (validUrls.length === 0) {
-        return res.status(400).json({
-            success: false,
-            error: 'No valid URLs provided'
-        });
+        return res.status(400).json({ success: false, error: 'No valid URLs provided' });
     }
 
-    console.log(`🔄 Bulk processing ${validUrls.length} URLs...`);
-
-    // Use SSE (Server-Sent Events) for real-time progress
+    // SSE Setup
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -46,19 +26,11 @@ export const bulkExtract = async (req, res) => {
     const results = [];
     let completed = 0;
 
-    // Send initial event
-    res.write(`data: ${JSON.stringify({
-        type: 'start',
-        total: validUrls.length
-    })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: 'start', total: validUrls.length })}\n\n`);
 
-    // Process URLs one by one (to avoid overloading)
     for (const url of validUrls) {
         try {
-            console.log(`  Processing: ${url}`);
-
             const scraped = await scrapeWebsite(url);
-
             const result = {
                 url,
                 status: 'success',
@@ -74,7 +46,6 @@ export const bulkExtract = async (req, res) => {
             results.push(result);
             completed++;
 
-            // Send progress update
             res.write(`data: ${JSON.stringify({
                 type: 'progress',
                 completed,
@@ -84,15 +55,16 @@ export const bulkExtract = async (req, res) => {
                 percentage: Math.round((completed / validUrls.length) * 100)
             })}\n\n`);
 
-            // Save to DB in background if logged in
-            try {
-                const authHeader = req.headers.authorization;
-                if (authHeader) {
+            // Save to DB in Background
+            const authHeader = req.headers.authorization;
+            if (authHeader) {
+                try {
                     const token = authHeader.split(' ')[1];
-                    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-random-secret-key-min-32-chars-long');
+                    const decodedToken = await auth.verifyIdToken(token);
+                    const uid = decodedToken.uid;
 
-                    await Extraction.create({
-                        userId: decoded.id,
+                    await db.collection('extractions').add({
+                        userId: uid,
                         url,
                         type: 'bulk',
                         data: result.data,
@@ -101,52 +73,31 @@ export const bulkExtract = async (req, res) => {
                             emails: result.data.emails.length,
                             addresses: result.data.addresses.length,
                             total: result.data.phones.length + result.data.emails.length + result.data.addresses.length
-                        }
+                        },
+                        createdAt: new Date().toISOString()
                     });
-                    await User.findByIdAndUpdate(decoded.id, { $inc: { extractionCount: 1 } });
-                }
-            } catch (dbError) {
-                console.error('⚠️ Bulk DB Save Error:', dbError.message);
+
+                    await db.collection('users').doc(uid).set({
+                        extractionCount: admin.firestore.FieldValue.increment(1)
+                    }, { merge: true });
+
+                } catch (e) { console.error('Bulk DB error:', e.message); }
             }
 
         } catch (error) {
-            const failedResult = {
-                url,
-                status: 'failed',
-                error: error.message,
-                data: null
-            };
-
-            results.push(failedResult);
             completed++;
-
             res.write(`data: ${JSON.stringify({
                 type: 'progress',
                 completed,
                 total: validUrls.length,
                 url,
-                result: failedResult,
-                percentage: Math.round((completed / validUrls.length) * 100)
+                status: 'failed',
+                error: error.message
             })}\n\n`);
         }
-
-        // Small delay between requests (be respectful)
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    // Send completion event
-    res.write(`data: ${JSON.stringify({
-        type: 'complete',
-        results,
-        summary: {
-            total: validUrls.length,
-            successful: results.filter(r => r.status === 'success').length,
-            failed: results.filter(r => r.status === 'failed').length,
-            totalPhones: results.reduce((sum, r) => sum + (r.data?.phones?.length || 0), 0),
-            totalEmails: results.reduce((sum, r) => sum + (r.data?.emails?.length || 0), 0),
-            totalAddresses: results.reduce((sum, r) => sum + (r.data?.addresses?.length || 0), 0)
-        }
-    })}\n\n`);
-
+    res.write(`data: ${JSON.stringify({ type: 'complete', summary: { total: validUrls.length } })}\n\n`);
     res.end();
 };

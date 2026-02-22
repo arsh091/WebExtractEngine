@@ -3,9 +3,7 @@ import { validateUrl } from '../utils/validators.js';
 import { extractPhones, extractEmails, extractAddresses } from '../services/extractor.js';
 import { extractCompanyInfo } from '../services/companyExtractor.js';
 import { extractSocialMedia } from '../services/socialExtractor.js';
-import jwt from 'jsonwebtoken';
-import Extraction from '../models/Extraction.js';
-import User from '../models/User.js';
+import { db, auth, admin } from '../config/firebase.js';
 
 export const extractData = async (req, res) => {
     const startTime = Date.now();
@@ -20,31 +18,22 @@ export const extractData = async (req, res) => {
             });
         }
 
-        // Scrape website (now returns {text, html, url})
+        // Scrape website
         const scraped = await scrapeWebsite(url);
 
-        // === EXISTING EXTRACTIONS ===
+        // Extractions
         const phones = extractPhones(scraped.text);
         const emails = extractEmails(scraped.text);
         const addresses = extractAddresses(scraped.text);
-
-        // === NEW EXTRACTIONS ===
         const companyInfo = extractCompanyInfo(scraped.html, url);
         const socialMedia = extractSocialMedia(scraped.text + '\n' + scraped.html, scraped.html);
 
         const processingTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
+        // Send response first
         res.json({
             success: true,
-            data: {
-                // Existing
-                phones,
-                emails,
-                addresses,
-                // New
-                companyInfo,
-                socialMedia
-            },
+            data: { phones, emails, addresses, companyInfo, socialMedia },
             count: {
                 phones: phones.length,
                 emails: emails.length,
@@ -61,15 +50,16 @@ export const extractData = async (req, res) => {
             }
         });
 
-        // Save to DB if logged in (Background)
-        try {
-            const authHeader = req.headers.authorization;
-            if (authHeader) {
+        // Save to Firestore if token is present (Background)
+        const authHeader = req.headers.authorization;
+        if (authHeader) {
+            try {
                 const token = authHeader.split(' ')[1];
-                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-random-secret-key-min-32-chars-long');
+                const decodedToken = await auth.verifyIdToken(token);
+                const uid = decodedToken.uid;
 
-                await Extraction.create({
-                    userId: decoded.id,
+                const extractionData = {
+                    userId: uid,
                     url,
                     type: 'single',
                     data: { phones, emails, addresses, companyInfo, socialMedia },
@@ -79,14 +69,23 @@ export const extractData = async (req, res) => {
                         addresses: addresses.length,
                         total: phones.length + emails.length + addresses.length
                     },
-                    processingTime: processingTime + 's'
-                });
+                    processingTime: processingTime + 's',
+                    createdAt: new Date().toISOString(),
+                    isFavorite: false
+                };
 
-                await User.findByIdAndUpdate(decoded.id, { $inc: { extractionCount: 1 } });
+                // Add to extractions collection
+                await db.collection('extractions').add(extractionData);
+
+                // Update user usage count
+                const userRef = db.collection('users').doc(uid);
+                await userRef.set({
+                    extractionCount: admin.firestore.FieldValue.increment(1)
+                }, { merge: true });
+
+            } catch (authError) {
+                console.error('⚠️ Firebase Auth/DB Error:', authError.message);
             }
-        } catch (dbError) {
-            console.error('⚠️ DB Save Error:', dbError.message);
-            // Silent fail - don't break the response
         }
 
     } catch (error) {
@@ -101,6 +100,6 @@ export const extractData = async (req, res) => {
 export const testExtraction = (req, res) => {
     res.json({
         success: true,
-        message: 'Extract controller is connected and working'
+        message: 'Extract controller is connected (Firebase Node)'
     });
 };

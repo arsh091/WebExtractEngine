@@ -1,39 +1,47 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
-import Extraction from '../models/Extraction.js';
-import User from '../models/User.js';
+import { db, auth } from '../config/firebase.js';
 
 const router = express.Router();
 
-// Auth middleware
-const auth = async (req, res, next) => {
+// Auth middleware for history
+const verifyFirebaseToken = async (req, res, next) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ success: false, error: 'Please login' });
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ success: false, error: 'Please login' });
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
-        req.userId = decoded.id;
+        const token = authHeader.split(' ')[1];
+        const decodedToken = await auth.verifyIdToken(token);
+        req.uid = decodedToken.uid;
         next();
     } catch {
         res.status(401).json({ success: false, error: 'Invalid token' });
     }
 };
 
-// GET /api/history - Get user's extraction history
-router.get('/', auth, async (req, res) => {
+router.use(verifyFirebaseToken);
+
+// GET /api/history - Get user's extraction history from Firestore
+router.get('/', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
 
-        const extractions = await Extraction
-            .find({ userId: req.userId })
-            .sort({ createdAt: -1 })
-            .skip(skip)
+        const historyRef = db.collection('extractions');
+        const snapshot = await historyRef
+            .where('userId', '==', req.uid)
+            .orderBy('createdAt', 'desc')
             .limit(limit)
-            .select('-data.phones -data.emails -data.addresses'); // Compact view
+            // Note: StartAfter could be added for better pagination
+            .get();
 
-        const total = await Extraction.countDocuments({ userId: req.userId });
+        const extractions = [];
+        snapshot.forEach(doc => {
+            extractions.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Simplified total count for Firebase (can use separate counter in prod)
+        const totalSnapshot = await historyRef.where('userId', '==', req.uid).count().get();
+        const total = totalSnapshot.data().count;
 
         res.json({
             success: true,
@@ -50,61 +58,52 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
-// GET /api/history/:id - Get single extraction details
-router.get('/:id', auth, async (req, res) => {
+// GET /api/history/:id
+router.get('/:id', async (req, res) => {
     try {
-        const extraction = await Extraction.findOne({
-            _id: req.params.id,
-            userId: req.userId
-        });
+        const doc = await db.collection('extractions').doc(req.params.id).get();
 
-        if (!extraction) {
+        if (!doc.exists || doc.data().userId !== req.uid) {
             return res.status(404).json({ success: false, error: 'Not found' });
         }
 
-        res.json({ success: true, data: extraction });
+        res.json({ success: true, data: { id: doc.id, ...doc.data() } });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
 // DELETE /api/history/:id
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
-        await Extraction.findOneAndDelete({
-            _id: req.params.id,
-            userId: req.userId
-        });
+        const docRef = db.collection('extractions').doc(req.params.id);
+        const doc = await docRef.get();
+
+        if (!doc.exists || doc.data().userId !== req.uid) {
+            return res.status(404).json({ success: false, error: 'Not authorized' });
+        }
+
+        await docRef.delete();
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// PATCH /api/history/:id/favorite - Toggle favorite
-router.patch('/:id/favorite', auth, async (req, res) => {
+// PATCH /api/history/:id/favorite
+router.patch('/:id/favorite', async (req, res) => {
     try {
-        const extraction = await Extraction.findOne({
-            _id: req.params.id,
-            userId: req.userId
-        });
+        const docRef = db.collection('extractions').doc(req.params.id);
+        const doc = await docRef.get();
 
-        if (!extraction) return res.status(404).json({ success: false, error: 'Not found' });
+        if (!doc.exists || doc.data().userId !== req.uid) {
+            return res.status(404).json({ success: false, error: 'Not authorized' });
+        }
 
-        extraction.isFavorite = !extraction.isFavorite;
-        await extraction.save();
+        const newFavStatus = !doc.data().isFavorite;
+        await docRef.update({ isFavorite: newFavStatus });
 
-        res.json({ success: true, isFavorite: extraction.isFavorite });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// DELETE /api/history - Clear all history
-router.delete('/', auth, async (req, res) => {
-    try {
-        await Extraction.deleteMany({ userId: req.userId });
-        res.json({ success: true, message: 'History cleared' });
+        res.json({ success: true, isFavorite: newFavStatus });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
