@@ -1,72 +1,100 @@
 import { motion } from 'framer-motion';
-import { FiGithub, FiTwitter, FiMessageSquare, FiUsers, FiHeart, FiStar, FiActivity } from 'react-icons/fi';
+import { FiGithub, FiTwitter, FiMessageSquare, FiUsers, FiHeart, FiActivity, FiGlobe, FiCpu, FiAward } from 'react-icons/fi';
 
 const Community = () => {
     return (
-        <div className="container mx-auto px-4 py-20 max-w-5xl">
-            <div className="text-center mb-20 space-y-6">
+        <div className="container mx-auto px-6 py-32 max-w-7xl font-sans">
+            <div className="text-center mb-32 space-y-10">
                 <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500/10 text-pink-500 rounded-full text-xs font-bold uppercase tracking-widest mb-4"
+                    className="inline-flex items-center gap-3 px-6 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-[0.3em] border border-emerald-100 mb-6 italic"
                 >
-                    <FiHeart /> Open Source & Proud
+                    <FiAward className="animate-bounce" /> Collaborative Ecosystem
                 </motion.div>
-                <h1 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter">
-                    Join the Collective.
+                <h1 className="text-5xl md:text-[8rem] font-black text-[var(--text-primary)] tracking-tight uppercase leading-none italic">
+                    Connect with <span className="text-[var(--primary-blue)]">Extract</span> Engineers.
                 </h1>
-                <p className="text-xl text-gray-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                    Connecting developers, data scientists, and intelligence enthusiasts globally.
-                    Together, we build the future of the decentralized web.
+                <p className="text-xl md:text-2xl text-[var(--text-secondary)] font-medium max-w-4xl mx-auto leading-relaxed opacity-60">
+                    Join a global network of specialized data architects. We're building the infrastructure
+                    for high-fidelity information extraction at planetary scale.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20 text-center md:text-left">
-                <div className="p-8 md:p-10 bg-gray-900 text-white rounded-[2rem] relative overflow-hidden group shadow-2xl">
-                    <FiGithub className="absolute -bottom-10 -right-10 text-[10rem] md:text-[15rem] opacity-5 group-hover:rotate-12 transition-transform duration-700" />
-                    <h3 className="text-2xl md:text-3xl font-black mb-4 flex items-center justify-center md:justify-start gap-3 italic">
-                        <FiGithub /> Developer Hub
-                    </h3>
-                    <p className="text-slate-400 mb-8 leading-relaxed text-sm md:text-base">
-                        Contribute to our core engine or explore our suite of community-driven plugins on GitHub.
-                    </p>
-                    <button className="w-full md:w-auto px-8 py-3 bg-white text-black rounded-xl font-bold hover:bg-primary-500 hover:text-white transition-all text-xs md:text-sm">
-                        EXPLORE REPOSITORIES
-                    </button>
-                    <div className="mt-10 flex flex-wrap justify-center md:justify-start items-center gap-4 md:gap-6 text-slate-500 font-mono text-[10px] md:text-xs">
-                        <span className="flex items-center gap-2 shrink-0"><FiStar className="text-yellow-500" /> 12.4k Stars</span>
-                        <span className="flex items-center gap-2 shrink-0"><FiUsers /> 1.2k Contributors</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-32">
+                <div className="p-16 bg-black text-white rounded-[4rem] relative overflow-hidden group shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] min-h-[500px] flex flex-col justify-between border-none">
+                    <div className="relative z-10">
+                        <div className="w-16 h-16 rounded-[1.5rem] bg-[var(--primary-blue)] flex items-center justify-center text-white mb-10 shadow-[0_0_30px_rgba(37,99,235,0.4)]">
+                            <FiGithub size={32} />
+                        </div>
+                        <h3 className="text-4xl font-black mb-8 flex items-center gap-4 uppercase tracking-tighter italic">
+                            Core Repositories
+                        </h3>
+                        <p className="text-white/40 mb-12 text-lg leading-relaxed font-medium">
+                            Contribute to our primary extraction engines, SDKs, and enterprise middleware. Open development starts here.
+                        </p>
+                        <button className="px-12 py-6 bg-[var(--primary-blue)] text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all shadow-2xl active:scale-95">
+                            Browse Repositories
+                        </button>
                     </div>
+                    <div className="mt-16 flex items-center gap-12 relative z-10">
+                        <div className="flex flex-col">
+                            <span className="text-white text-5xl font-black italic tracking-tighter">12.5K</span>
+                            <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] mt-3">Stars Gained</span>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-white text-5xl font-black italic tracking-tighter">1,400</span>
+                            <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] mt-3">Global Contributors</span>
+                        </div>
+                    </div>
+                    <div className="absolute -bottom-20 -right-20 w-[400px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full group-hover:bg-blue-500/20 transition-all duration-1000"></div>
                 </div>
 
-                <div className="p-8 md:p-10 bg-primary-500 text-white rounded-[2rem] relative overflow-hidden group shadow-2xl">
-                    <FiMessageSquare className="absolute -bottom-10 -right-10 text-[10rem] md:text-[15rem] opacity-10 group-hover:-rotate-12 transition-transform duration-700" />
-                    <h3 className="text-2xl md:text-3xl font-black mb-4 flex items-center justify-center md:justify-start gap-3 italic">
-                        <FiMessageSquare /> Core Chat
-                    </h3>
-                    <p className="text-white/80 mb-8 leading-relaxed text-sm md:text-base">
-                        Join our Discord for real-time support, feature requests, and early access to experimental releases.
-                    </p>
-                    <button className="w-full md:w-auto px-8 py-3 bg-white text-primary-600 rounded-xl font-bold hover:bg-gray-900 hover:text-white transition-all text-xs md:text-sm">
-                        JOIN THE DISCORD
-                    </button>
+                <div className="p-16 bg-white text-[var(--text-primary)] rounded-[4rem] border-2 border-[var(--border-color)] relative overflow-hidden group shadow-2xl min-h-[500px] flex flex-col justify-between">
+                    <div className="relative z-10">
+                        <div className="w-16 h-16 rounded-[1.5rem] bg-black flex items-center justify-center text-white mb-10 shadow-xl">
+                            <FiMessageSquare size={32} />
+                        </div>
+                        <h3 className="text-4xl font-black mb-8 flex items-center gap-4 uppercase tracking-tighter italic">
+                            Engineer HQ
+                        </h3>
+                        <p className="text-[var(--text-secondary)] mb-12 text-lg leading-relaxed font-medium opacity-60">
+                            The primary node for real-time collaboration. Discuss architecture, request features, and get production support.
+                        </p>
+                        <button className="px-12 py-6 bg-black text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-[var(--primary-blue)] transition-all shadow-2xl active:scale-95">
+                            Join Discord Node
+                        </button>
+                    </div>
+                    <div className="mt-16 flex items-center gap-12 relative z-10">
+                        <div className="flex flex-col">
+                            <span className="text-[var(--text-primary)] text-5xl font-black italic tracking-tighter">45K</span>
+                            <span className="text-[9px] font-black text-[var(--text-secondary)]/30 uppercase tracking-[0.4em] mt-3">Active Channels</span>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[var(--text-primary)] text-5xl font-black italic tracking-tighter">24/7</span>
+                            <span className="text-[9px] font-black text-[var(--text-secondary)]/30 uppercase tracking-[0.4em] mt-3">Expert Monitoring</span>
+                        </div>
+                    </div>
+                    <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-50 rounded-full blur-[100px] translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
                 {[
-                    { title: "Weekly Sprints", icon: <FiActivity />, val: "15+" },
-                    { title: "Total Users", icon: <FiUsers />, val: "50k+" },
-                    { title: "Twitter Base", icon: <FiTwitter />, val: "22k" }
+                    { title: "Weekly Sprints", icon: <FiActivity />, val: "22+", color: "text-emerald-500", bg: "bg-emerald-50" },
+                    { title: "Platform Users", icon: <FiGlobe />, val: "150k+", color: "text-blue-500", bg: "bg-blue-50" },
+                    { title: "Developer Base", icon: <FiUsers />, val: "8.5k", color: "text-indigo-500", bg: "bg-indigo-50" },
+                    { title: "Twitter Feed", icon: <FiTwitter />, val: "@WebExtract", color: "text-sky-500", bg: "bg-sky-50" }
                 ].map((stat, i) => (
-                    <div key={i} className="p-5 md:p-6 bg-white dark:bg-slate-900 border border-gray-100 dark:border-white/5 rounded-2xl flex items-center justify-between">
-                        <div className="flex items-center gap-3 md:gap-4">
-                            <div className="p-2.5 md:p-3 bg-gray-50 dark:bg-black/50 text-primary-500 rounded-xl shrink-0">
-                                {stat.icon}
-                            </div>
-                            <span className="text-[10px] md:text-sm font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest">{stat.title}</span>
+                    <div key={i} className="p-10 bg-white border-2 border-[var(--border-color)] rounded-[3rem] flex flex-col justify-between hover:shadow-2xl transition-all group overflow-hidden relative">
+                        <div className="absolute top-0 right-0 w-2 h-full bg-[var(--primary-blue)] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className={`p-5 ${stat.bg} ${stat.color} rounded-2xl w-fit mb-8 shadow-sm group-hover:scale-110 transition-transform`}>
+                            {stat.icon}
                         </div>
-                        <span className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tabular-nums">{stat.val}</span>
+                        <div>
+                            <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] opacity-40 mb-3 block italic">{stat.title}</span>
+                            <span className="text-3xl font-black text-[var(--text-primary)] tracking-tighter uppercase italic">{stat.val}</span>
+                        </div>
                     </div>
                 ))}
             </div>

@@ -1,135 +1,144 @@
-import { useEffect, useRef, useContext, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { HiLightningBolt, HiMenuAlt3 } from 'react-icons/hi';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { FiMoon, FiSun, FiClock, FiX, FiUser, FiLogOut, FiDatabase } from 'react-icons/fi';
+import {
+    Menu, X, Database, LogOut,
+    User, Shield, Activity, Terminal, Globe, Cpu, Atom, LayoutGrid
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
-import { ThemeContext } from '../context/ThemeContext';
-
-const Navbar = ({ onOpenHistory, onOpenAuth, onOpenApi }) => {
-    const logoRef = useRef(null);
+const Navbar = ({ onOpenHistory, onOpenAuth, onOpenApi, onOpenSecurity, onOpenIP, onOpenAdvanced }) => {
     const navRef = useRef(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { theme, toggleTheme } = useContext(ThemeContext);
+    const [scrolled, setScrolled] = useState(false);
     const { user, logout } = useAuth();
 
     useEffect(() => {
-        gsap.fromTo(logoRef.current,
-            { opacity: 0, x: -20 },
-            { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }
-        );
-
         const handleScroll = () => {
-            const isScrolled = window.scrollY > 20;
-            if (isScrolled) {
-                navRef.current?.classList.add('bg-white/80', 'dark:bg-appDark/80', 'backdrop-blur-md', 'shadow-xl', 'py-3');
-                navRef.current?.classList.remove('py-4');
-            } else {
-                navRef.current?.classList.remove('bg-white/80', 'dark:bg-appDark/80', 'backdrop-blur-md', 'shadow-xl', 'py-3');
-                navRef.current?.classList.add('py-4');
-            }
+            setScrolled(window.scrollY > 20);
         };
-
         window.addEventListener('scroll', handleScroll);
+
+        gsap.to(navRef.current, {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            ease: 'power4.out'
+        });
+
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const navLinks = [
+        { name: 'Infrastructure', onClick: onOpenIP },
+        { name: 'Deep Scan', onClick: onOpenAdvanced },
+        { name: 'Security', onClick: onOpenSecurity },
+        { name: 'API Docs', onClick: onOpenApi },
+    ];
+
     return (
-        <>
-            <nav
-                ref={navRef}
-                className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 py-4 px-6 md:px-12 flex items-center justify-between ${theme === 'dark' ? 'text-white' : 'text-gray-900 border-b border-gray-100'}`}
-            >
-                <Link to="/" ref={logoRef} className="flex items-center space-x-2 cursor-pointer group">
-                    <div className="p-2 bg-primary-500 rounded-lg group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-primary-500/20">
-                        <HiLightningBolt className="text-white text-xl" />
+        <nav
+            ref={navRef}
+            className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-500 opacity-0 -translate-y-4 ${scrolled ? 'py-4 bg-white/80 backdrop-blur-xl border-b border-[var(--border-color)] shadow-sm' : 'py-8 bg-transparent'
+                }`}
+        >
+            <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+                {/* Logo */}
+                <Link to="/" className="flex items-center gap-2 group">
+                    <div className="w-10 h-10 flex items-center justify-center bg-black rounded-xl shadow-lg group-hover:bg-[var(--primary-blue)] transition-all duration-500 group-hover:rotate-6">
+                        <LayoutGrid className="text-white w-5 h-5" />
                     </div>
-                    <span className="text-2xl font-bold tracking-tight">
-                        Web<span className="text-primary-500">Extract</span>
+                    <span className="text-xl font-bold tracking-tight text-[var(--text-primary)] uppercase italic">
+                        Web<span className="text-[var(--primary-blue)]">Extract</span>
                     </span>
                 </Link>
 
-                <div className="flex items-center space-x-3 md:space-x-4">
-                    <div className="hidden lg:flex items-center space-x-6 mr-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400">
-                        <button onClick={onOpenApi} className="hover:text-primary-500 transition-colors">API Terminal</button>
-                        <Link to="/community" className="hover:text-primary-500 transition-colors">Digital Community</Link>
-                    </div>
+                {/* Desktop Nav - Centered */}
+                <nav className="hidden lg:flex items-center gap-10">
+                    {navLinks.map((link) => (
+                        <button
+                            key={link.name}
+                            onClick={link.onClick}
+                            className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)] hover:text-[var(--primary-blue)] transition-all relative group"
+                        >
+                            {link.name}
+                            <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-[var(--primary-blue)] transition-all group-hover:w-full"></span>
+                        </button>
+                    ))}
+                </nav>
 
-                    <div className="flex items-center gap-2">
+                {/* Actions */}
+                <div className="flex items-center gap-5">
+                    <div className="hidden md:flex items-center gap-4">
                         {user ? (
-                            <div className="flex items-center gap-2">
+                            <>
                                 <button
                                     onClick={onOpenHistory}
-                                    className="p-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm border border-transparent flex items-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest"
+                                    className="p-3 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--primary-blue)] hover:border-[var(--primary-blue)] transition-all outline-none bg-white font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
+                                    title="Extraction History"
                                 >
-                                    <FiDatabase className="text-xl" />
-                                    <span className="hidden md:block italic">Vault</span>
+                                    <Database size={14} /> Vault
                                 </button>
-
-                                <div className="h-8 w-px bg-white/10 mx-1 hidden md:block"></div>
-
                                 <button
                                     onClick={logout}
-                                    className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all shadow-sm border border-red-500/10 flex items-center gap-2 px-4 font-black text-[10px] uppercase tracking-widest"
+                                    className="p-3 rounded-xl border border-[var(--border-color)] text-red-500 hover:bg-red-50 transition-all outline-none bg-white"
+                                    title="Logout"
                                 >
-                                    <FiLogOut className="text-xl" />
-                                    <span className="hidden md:block italic">Signout</span>
+                                    <LogOut size={16} />
                                 </button>
-                            </div>
+                            </>
                         ) : (
                             <button
                                 onClick={onOpenAuth}
-                                className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all"
+                                className="pro-button pro-button-primary !py-3 !px-10 text-[10px] shadow-2xl shadow-blue-600/20"
                             >
-                                <FiUser className="inline mr-2" /> Authenticate
+                                Get Started
                             </button>
                         )}
-
-                        <button
-                            onClick={toggleTheme}
-                            className="p-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm border border-transparent"
-                        >
-                            {theme === 'dark' ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
-                        </button>
-
-                        <button
-                            className="lg:hidden p-2.5 rounded-xl bg-gray-900 text-white shadow-lg"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        >
-                            {isMenuOpen ? <FiX size={20} /> : <HiMenuAlt3 size={20} />}
-                        </button>
                     </div>
-                </div>
-            </nav>
 
+                    <button
+                        className="lg:hidden p-3 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)] outline-none bg-white"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    >
+                        {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Mobile Menu */}
             <AnimatePresence>
                 {isMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0, x: '100%' }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: '100%' }}
-                        className="fixed inset-0 z-[55] bg-white dark:bg-appDark p-8 pt-32 lg:hidden"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="lg:hidden overflow-hidden bg-white border-b border-[var(--border-color)] shadow-2xl"
                     >
-                        <div className="flex flex-col space-y-8 text-center">
-                            <Link to="/docs" onClick={() => setIsMenuOpen(false)} className="text-3xl font-black italic text-gray-900 dark:text-white uppercase tracking-tighter">Documentation</Link>
-                            <button
-                                onClick={() => { onOpenApi(); setIsMenuOpen(false); }}
-                                className="text-3xl font-black italic text-gray-900 dark:text-white uppercase tracking-tighter"
-                            >
-                                API Interface
-                            </button>
-                            <Link to="/community" onClick={() => setIsMenuOpen(false)} className="text-3xl font-black italic text-gray-900 dark:text-white uppercase tracking-tighter">Community Hub</Link>
-                            <div className="pt-12 flex flex-col items-center gap-6">
-                                <Link to="/privacy" onClick={() => setIsMenuOpen(false)} className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none">Privacy Policy</Link>
-                                <Link to="/terms" onClick={() => setIsMenuOpen(false)} className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none">Terms of Service</Link>
-                            </div>
+                        <div className="p-8 flex flex-col gap-6">
+                            {navLinks.map((link) => (
+                                <button
+                                    key={link.name}
+                                    onClick={() => { link.onClick(); setIsMenuOpen(false); }}
+                                    className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-primary)] text-left hover:text-[var(--primary-blue)] transition-colors"
+                                >
+                                    {link.name}
+                                </button>
+                            ))}
+                            {!user && (
+                                <button
+                                    onClick={() => { onOpenAuth(); setIsMenuOpen(false); }}
+                                    className="pro-button pro-button-primary w-full text-center py-5 uppercase tracking-[0.4em] text-[10px]"
+                                >
+                                    Get Started
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </>
+        </nav>
     );
 };
 

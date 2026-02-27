@@ -10,5 +10,12 @@
     },
     "devDependencies": {
         "concurrently": "^8.2.2"
+    },
+    "dependencies": {
+        "express-rate-limit": "^8.2.1",
+        "geoip-lite": "^1.4.10",
+        "helmet": "^8.1.0",
+        "ssl-checker": "^2.0.10",
+        "ua-parser-js": "^2.0.9"
     }
 }

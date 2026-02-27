@@ -1,57 +1,64 @@
 import { motion } from 'framer-motion';
-import { FiShield, FiCpu, FiHash, FiUnlock, FiLock } from 'react-icons/fi';
+import { FiShield, FiCpu, FiHash, FiUnlock, FiLock, FiActivity, FiLayers } from 'react-icons/fi';
 
 const Security = () => {
     const protocols = [
-        { title: "TLS 1.3 Encryption", desc: "All connections between our engine and target sites are secured via bank-grade TLS 1.3 encryption protocols.", icon: <FiLock /> },
-        { title: "Sandboxed Browsing", desc: "Chromium instances used for deep scraping are fully sandboxed, ensuring zero-day vulnerabilities in targets cannot affect our core stability.", icon: <FiCpu /> },
-        { title: "Stateless Extraction", desc: "Our extraction processes are stateless; we do not cache your sensitive results after the response is finalized.", icon: <FiHash /> }
+        { title: "TLS 1.3 ENCRYPTION", desc: "All outbound handshakes between the node cluster and target domains are secured via industry-standard TLS 1.3 encryption protocols.", icon: <FiLock /> },
+        { title: "SANDBOXED UNITS", desc: "Chromium instances used for dynamic rendering are fully isolated at the kernel level, mitigating cross-process exploitation risks.", icon: <FiCpu /> },
+        { title: "ZERO-PERSISTENCE", desc: "The extraction pipeline is strictly ephemeral; knowledge results are purged from CPU registers immediately after user delivery.", icon: <FiHash /> }
     ];
 
     return (
-        <div className="container mx-auto px-4 py-20 max-w-5xl">
+        <div className="container mx-auto px-6 py-32 max-w-7xl font-sans">
             <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-20 text-center"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-32 text-center"
             >
-                <div className="w-20 h-20 bg-primary-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-primary-500/20">
-                    <FiShield className="text-white text-4xl" />
+                <div className="w-24 h-24 bg-black rounded-[2rem] flex items-center justify-center mx-auto mb-12 shadow-2xl group hover:bg-[var(--primary-blue)] transition-all duration-500">
+                    <FiShield className="text-white text-5xl group-hover:rotate-12 transition-transform" />
                 </div>
-                <h1 className="text-4xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter mb-6 md:mb-8">
-                    Hardened Security.
+                <h1 className="text-5xl md:text-[9.5rem] font-black text-[var(--text-primary)] tracking-tight mb-10 uppercase italic leading-none">
+                    Hardened <br />
+                    <span className="text-[var(--primary-blue)]">Security</span>
                 </h1>
-                <p className="text-lg md:text-xl text-gray-500 dark:text-slate-400 max-w-2xl mx-auto italic px-4">
-                    Infrastructure designed to protect your intelligence workflows with enterprise-grade safeguards.
+                <p className="text-xl md:text-3xl text-[var(--text-secondary)] max-w-5xl mx-auto font-medium leading-relaxed opacity-60 px-4 italic">
+                    Enterprise-grade protocols engineered to protect your intelligence workflows with total operational transparency and cryptographic integrity.
                 </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-20">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-32">
                 {protocols.map((p, i) => (
-                    <div key={i} className="p-8 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-white/5 rounded-[2rem] md:rounded-[2.5rem] relative overflow-hidden group">
-                        <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary-500/5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-                        <div className="text-3xl text-primary-500 mb-6">{p.icon}</div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-tighter italic">{p.title}</h3>
-                        <p className="text-sm text-gray-500 dark:text-slate-400 leading-relaxed">{p.desc}</p>
+                    <div key={i} className="p-16 bg-white border-2 border-[var(--border-color)] rounded-[4rem] relative overflow-hidden group shadow-2xl transition-all duration-500 hover:border-[var(--primary-blue)]/30">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="text-4xl text-[var(--primary-blue)] mb-12 bg-[var(--bg-secondary)] p-5 rounded-2xl w-fit group-hover:bg-white group-hover:shadow-2xl transition-all duration-700">{p.icon}</div>
+                        <h3 className="text-[10px] font-black text-[var(--text-primary)] mb-6 uppercase tracking-[0.4em] italic">{p.title}</h3>
+                        <p className="text-lg text-[var(--text-secondary)] leading-relaxed font-black opacity-60 italic group-hover:opacity-100 transition-opacity">{p.desc}</p>
                     </div>
                 ))}
             </div>
 
-            <div className="bg-gray-900 rounded-[2rem] md:rounded-[3rem] p-10 md:p-20 text-white relative overflow-hidden shadow-2xl border border-white/10">
-                <FiUnlock className="absolute top-1/2 -right-20 -translate-y-1/2 text-[20rem] md:text-[25rem] opacity-5 -rotate-12" />
-                <div className="max-w-xl relative z-10 text-center md:text-left">
-                    <h2 className="text-3xl md:text-5xl font-black mb-6 md:mb-8 leading-tight">Vulnerability Disclosure.</h2>
-                    <p className="text-slate-400 mb-8 md:mb-10 text-base md:text-lg">
-                        We welcome reports from security researchers. If you identify a potential vulnerability in our
-                        extraction engine or infrastructure, please contact our security team immediately.
+            <div className="bg-black rounded-[4rem] p-16 md:p-32 text-white relative overflow-hidden shadow-2xl border-none group">
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/10 blur-[150px] rounded-full group-hover:bg-blue-500/20 transition-all duration-1000"></div>
+                <div className="max-w-4xl relative z-10">
+                    <div className="flex items-center gap-6 mb-12">
+                        <div className="p-5 bg-white/5 rounded-2xl border border-white/10 group-hover:bg-[var(--primary-blue)] transition-colors">
+                            <FiActivity size={40} className="text-white" />
+                        </div>
+                        <h2 className="text-4xl md:text-[6rem] font-black mb-0 uppercase tracking-tighter italic leading-none">Vulnerability <span className="text-[var(--primary-blue)]">Bounty</span></h2>
+                    </div>
+                    <p className="text-white/40 mb-16 text-xl md:text-2xl font-medium leading-relaxed italic max-w-3xl">
+                        We prioritize the security of our infrastructure. If you identify a potential vulnerability
+                        within the extraction engine, we invite you to participate in our coordinated disclosure program.
                     </p>
                     <a
-                        href="mailto:zubairrazasiddiqui@gmail.com?subject=Security Vulnerability Report - WebExtract AI"
-                        className="inline-block w-full md:w-auto px-10 py-4 bg-white text-black font-black rounded-2xl hover:bg-primary-500 hover:text-white transition-all tracking-widest uppercase text-xs shadow-xl text-center"
+                        href="mailto:security@webextract.com"
+                        className="inline-flex items-center gap-6 px-16 py-8 bg-[var(--primary-blue)] text-white font-black rounded-[2rem] hover:bg-white hover:text-black transition-all tracking-[0.4em] uppercase text-[10px] shadow-2xl active:scale-95 italic"
                     >
-                        Contact Security Team
+                        Contact Integrity Team <FiUnlock size={20} />
                     </a>
                 </div>
+                <FiUnlock className="absolute -bottom-20 -right-20 text-[35rem] opacity-5 -rotate-12 pointer-events-none group-hover:rotate-0 transition-transform duration-1000" />
             </div>
         </div>
     );

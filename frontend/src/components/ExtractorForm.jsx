@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { FiSearch, FiRefreshCw } from 'react-icons/fi';
+import { Search, RotateCcw, ShieldCheck, Globe } from 'lucide-react';
 
 const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
     const [url, setUrl] = useState('');
@@ -8,11 +8,10 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
     const containerRef = useRef(null);
 
     useEffect(() => {
-        // GSAP animation on mount
         gsap.fromTo(
             containerRef.current,
-            { opacity: 0, y: 30, scale: 0.95 },
-            { opacity: 1, y: 0, scale: 1, duration: 0.6, delay: 0.4 }
+            { opacity: 0, y: 15 },
+            { opacity: 1, y: 0, duration: 1, delay: 0.3, ease: 'power4.out' }
         );
     }, []);
 
@@ -31,10 +30,10 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
 
         if (!url || !validateUrl(url)) {
             setIsValidUrl(false);
-            // Shake animation
             gsap.to(containerRef.current, {
                 x: [-10, 10, -10, 10, 0],
-                duration: 0.4
+                duration: 0.4,
+                ease: 'power2.inOut'
             });
             return;
         }
@@ -50,10 +49,27 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
     };
 
     return (
-        <div ref={containerRef} className="w-full max-w-4xl mx-auto z-10">
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-primary-600 to-cyan-600 rounded-2xl blur opacity-25 group-focus-within:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+        <div ref={containerRef} className="w-full max-w-5xl mx-auto z-10 px-6">
+            <form onSubmit={handleSubmit} className="pro-card p-10 md:p-14 relative overflow-hidden bg-white shadow-2xl border border-[var(--border-color)]">
+                <div className="flex flex-col gap-10 relative z-10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center shadow-xl">
+                                <Globe className="w-7 h-7 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-[var(--text-primary)] font-bold text-2xl tracking-tight">Data Extractor</h3>
+                                <p className="text-[var(--text-secondary)] text-sm font-medium mt-1">Enter a URL to analyze</p>
+                            </div>
+                        </div>
+                        <div className="hidden md:block">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-100">
+                                <ShieldCheck className="w-4 h-4 text-blue-600" />
+                                <span className="text-xs font-semibold text-blue-700">Secure Connection</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="relative">
                         <input
                             ref={inputRef}
@@ -63,65 +79,49 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
                                 setUrl(e.target.value);
                                 if (!isValidUrl) setIsValidUrl(true);
                             }}
-                            placeholder="Enter website URL (e.g., https://example.com) • Ctrl + K"
-                            className={`w-full px-8 py-5 bg-white dark:bg-slate-900 border-2 
-                ${isValidUrl ? 'border-gray-100 dark:border-slate-800 focus:border-primary-500' : 'border-red-500'} 
-                rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 
-                focus:outline-none focus:ring-4 focus:ring-primary-500/10
-                transition-all duration-300 shadow-xl`}
+                            placeholder="Enter Target URL (https://...)"
+                            className={`w-full px-6 py-4 bg-[var(--bg-secondary)] border-2 rounded-xl 
+                                ${isValidUrl ? 'border-transparent focus:border-[var(--primary-blue)]/50 focus:bg-white' : 'border-red-500/50 bg-red-50 text-red-900'} 
+                                text-[var(--text-primary)] placeholder-[var(--text-secondary)]/50 font-medium text-lg
+                                transition-all duration-300 outline-none`}
                             disabled={loading}
-                            aria-label="Website URL"
-                            aria-invalid={!isValidUrl}
                         />
-                        <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 pointer-events-none">
-                            <kbd className="px-2 py-1 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-[10px] font-bold text-gray-500 dark:text-gray-400">CTRL</kbd>
-                            <kbd className="px-2 py-1 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-[10px] font-bold text-gray-500 dark:text-gray-400">K</kbd>
+                        <div className="text-red-500 text-sm mt-3 ml-2 font-medium flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                            Please enter a valid URL including http:// or https://
                         </div>
                     </div>
-                    {!isValidUrl && (
-                        <p className="text-red-500 dark:text-red-400 text-sm mt-3 ml-2 font-medium flex items-center gap-2 animate-fade-in">
-                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
-                            Please enter a valid website URL (including https://)
-                        </p>
-                    )}
-                </div>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <button
-                        type="submit"
-                        disabled={loading || !url}
-                        className="w-full sm:flex-[2] bg-primary-500 hover:bg-primary-600 
-              text-white font-bold py-4 md:py-5 px-6 md:px-8 rounded-2xl 
-              hover:scale-[1.02] active:scale-95 
-              disabled:opacity-50 disabled:cursor-not-allowed 
-              transition-all duration-300 flex items-center justify-center gap-3 shadow-xl shadow-primary-500/25"
-                    >
-                        {loading ? (
-                            <>
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-                                <span className="tracking-wide text-sm md:text-base">ANALYZING SOURCE...</span>
-                            </>
-                        ) : (
-                            <>
-                                <FiSearch className="text-xl md:text-2xl" />
-                                <span className="tracking-wide text-sm md:text-base">EXTRACT INTELLIGENCE</span>
-                            </>
-                        )}
-                    </button>
-
-                    {url && (
+                    <div className="flex flex-col sm:flex-row gap-5">
+                        <button
+                            type="submit"
+                            disabled={loading || !url}
+                            className="flex-[2] pro-button pro-button-primary !py-4 text-base disabled:opacity-50 active:scale-95"
+                        >
+                            {loading ? (
+                                <div className="flex items-center justify-center gap-3">
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span className="font-semibold">Extracting Data...</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center gap-2">
+                                    <Search className="w-5 h-5" />
+                                    <span className="font-semibold">Extract Data</span>
+                                </div>
+                            )}
+                        </button>
                         <button
                             type="button"
                             onClick={handleClear}
                             disabled={loading}
-                            className="w-full sm:flex-1 px-6 md:px-8 py-4 md:py-5 bg-gray-100 dark:bg-slate-800 
-                text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-gray-200 dark:hover:bg-slate-700 
-                transition-all duration-300 flex items-center justify-center gap-2 border border-transparent hover:border-gray-300 dark:hover:border-slate-600 font-bold text-sm md:text-base"
+                            className="flex-1 pro-button pro-button-secondary !py-4 text-base disabled:opacity-50 border-solid"
                         >
-                            <FiRefreshCw className={loading ? 'animate-spin' : ''} />
-                            CLEAR
+                            <div className="flex items-center justify-center gap-2">
+                                <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                                <span className="font-semibold">Clear</span>
+                            </div>
                         </button>
-                    )}
+                    </div>
                 </div>
             </form>
         </div>
@@ -129,3 +129,4 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
 };
 
 export default ExtractorForm;
+

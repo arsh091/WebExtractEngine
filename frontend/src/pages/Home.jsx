@@ -1,212 +1,197 @@
-import { useRef, useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
-import { FiSearch, FiRefreshCw } from 'react-icons/fi';
+import { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Zap, LayoutGrid, Terminal, Search, Layers, Activity, Shield, Cpu, Globe, ArrowRight, Database, Command } from 'lucide-react';
+
 import Hero from '../components/Hero';
 import ExtractorForm from '../components/ExtractorForm';
-import ResultsDisplay from '../components/ResultsDisplay';
-import LoadingSpinner from '../components/LoadingSpinner';
 import ProgressBar from '../components/ProgressBar';
-import Toast from '../components/Toast';
+import ResultsDisplay from '../components/ResultsDisplay';
 import BulkProcessor from '../components/BulkProcessor';
 
-import { useExtractor } from '../hooks/useExtractor';
-import { useHistory } from '../hooks/useHistory';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-
-const Home = ({ onOpenHistory, addToHistory, isHistoryOpen }) => {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const { loading, data, error, extractData, resetData } = useExtractor();
-    const [progress, setProgress] = useState(0);
-    const [toast, setToast] = useState(null);
+const Home = ({ onNotification }) => {
     const [activeTab, setActiveTab] = useState('single');
-    const inputRef = useRef(null);
-
-    // Auto-extract if URL param exists
-    useEffect(() => {
-        const urlParam = searchParams.get('url');
-        if (urlParam && inputRef.current && !loading && !data) {
-            inputRef.current.value = urlParam;
-            handleExtract(urlParam);
-            // Clear param after starting extraction to avoid loops
-            setSearchParams({}, { replace: true });
-        }
-    }, [searchParams, loading, data]);
-
-    // Initialize progress simulation when loading
-    useEffect(() => {
-        let interval;
-        if (loading) {
-            setProgress(0);
-            interval = setInterval(() => {
-                setProgress(prev => {
-                    if (prev >= 90) return prev;
-                    return prev + Math.random() * 15;
-                });
-            }, 800);
-        } else {
-            setProgress(100);
-            const timer = setTimeout(() => setProgress(0), 1000);
-            return () => clearTimeout(timer);
-        }
-        return () => clearInterval(interval);
-    }, [loading]);
-
-    // Success handling
-    useEffect(() => {
-        if (data && !loading) {
-            setTimeout(() => {
-                const element = document.getElementById('results-section');
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 100);
-        }
-    }, [data, loading]);
+    const [loading, setLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [data, setData] = useState(null);
+    const resultsRef = useRef(null);
 
     const handleExtract = async (url) => {
+        setLoading(true);
+        setProgress(0);
+        setData(null);
+
+        // Simulation for UI feedback
+        const interval = setInterval(() => {
+            setProgress((prev) => {
+                if (prev >= 95) {
+                    clearInterval(interval);
+                    return 95;
+                }
+                return prev + 5;
+            });
+        }, 300);
+
         try {
-            const result = await extractData(url);
-            addToHistory(url, result.data);
-            showNotification('Extraction complete!', 'success');
-        } catch (err) {
-            showNotification(err.message || 'Analysis failed', 'error');
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/extract`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url })
+            });
+            const result = await response.json();
+
+            clearInterval(interval);
+            setProgress(100);
+
+            if (!result.success) {
+                throw new Error(result.error || 'Extraction failed');
+            }
+
+            setTimeout(() => {
+                setData(result.data);
+                setLoading(false);
+                if (onNotification) onNotification('Data extracted successfully', 'success');
+                resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 600);
+        } catch (error) {
+            clearInterval(interval);
+            setLoading(false);
+            if (onNotification) onNotification(error.message || 'Extraction failed', 'error');
         }
     };
 
     const handleReset = () => {
-        resetData();
-        showNotification('Workspace cleared', 'success');
+        setData(null);
+        setProgress(0);
     };
-
-    const showNotification = (message, type) => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 4000);
-    };
-
-    // Keyboard Shortcuts
-    useKeyboardShortcuts({
-        focusInput: () => inputRef.current?.focus(),
-        submit: () => {
-            if (document.activeElement !== inputRef.current && inputRef.current?.value) {
-                handleExtract(inputRef.current.value);
-            }
-        },
-        clear: handleReset,
-        toggleHistory: onOpenHistory
-    });
 
     return (
-        <main className="relative">
-            <Hero />
+        <main className="min-h-screen pt-44 pb-44 relative bg-[var(--bg-main)] overflow-hidden font-sans">
+            {/* Background Aesthetics */}
+            <div className="absolute inset-0 bg-grid opacity-[0.02] pointer-events-none"></div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-blue-50/50 via-transparent to-transparent pointer-events-none"></div>
 
-            <div className="container mx-auto px-4 md:px-6 -mt-10 md:-mt-20 relative z-10 pb-20 md:pb-32">
-                {/* Tab Switcher */}
-                <div className="flex justify-center mb-12">
-                    <div className="bg-slate-900/40 backdrop-blur-xl rounded-[1.5rem] p-1.5 flex gap-1.5 border border-white/5 shadow-2xl">
-                        <button
-                            onClick={() => setActiveTab('single')}
-                            className={`px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 flex items-center gap-2 ${activeTab === 'single'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'text-slate-500 hover:text-white'
-                                }`}
-                        >
-                            <FiSearch className="text-sm" /> Single Intelligence
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('bulk')}
-                            className={`px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 flex items-center gap-2 ${activeTab === 'bulk'
-                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20'
-                                : 'text-slate-500 hover:text-white'
-                                }`}
-                        >
-                            <FiRefreshCw className="text-sm" /> Matrix Batch
-                        </button>
-                    </div>
-                </div>
+            {/* Floating Orbs */}
+            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-500/5 rounded-full blur-[120px] animate-pulse"></div>
+            <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-blue-500/5 rounded-full blur-[120px] animate-pulse delay-1000"></div>
 
-                {activeTab === 'single' ? (
-                    <>
-                        <ExtractorForm
-                            onExtract={handleExtract}
-                            onReset={handleReset}
-                            loading={loading}
-                            inputRef={inputRef}
-                        />
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <Hero />
 
-                        <AnimatePresence>
-                            {loading && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    className="mt-12"
-                                >
-                                    <ProgressBar progress={progress} />
-                                    <LoadingSpinner />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        <div id="results-section">
-                            <AnimatePresence mode="wait">
-                                {data && !loading && (
-                                    <ResultsDisplay
-                                        data={data}
-                                        onNotification={showNotification}
-                                    />
-                                )}
-                            </AnimatePresence>
+                {/* Processing Console */}
+                <div className="mt-40">
+                    <div className="flex flex-col items-center mb-20 text-center">
+                        <div className="flex items-center gap-3 mb-6 opacity-30">
+                            <Command size={14} className="text-[var(--primary-blue)]" />
+                            <span className="text-sm font-semibold text-[var(--text-secondary)]">Extraction Interface</span>
                         </div>
-                    </>
-                ) : (
-                    <BulkProcessor onNotification={showNotification} />
-                )}
+                        <h2 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mb-8">
+                            Select <span className="text-[var(--primary-blue)]">Operation</span> Mode
+                        </h2>
 
-                <AnimatePresence>
-                    {error && !loading && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            className="max-w-2xl mx-auto text-center mt-12 p-6 bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 dark:border-red-500/40 rounded-2xl text-red-600 dark:text-red-400 shadow-xl"
-                        >
-                            <p className="font-bold text-lg mb-2 text-red-500">EXTRACTION ERROR</p>
-                            <p className="opacity-80 font-medium">{error}</p>
-                            <button
-                                onClick={() => handleExtract(inputRef.current?.value)}
-                                className="mt-6 px-6 py-2 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all text-sm"
+                        {/* Tabs / Switcher */}
+                        <div className="inline-flex p-1.5 bg-white rounded-full border border-[var(--border-color)] shadow-sm hover:shadow-md transition-all duration-300">
+                            {[
+                                { id: 'single', label: 'Single Node', icon: Search },
+                                { id: 'bulk', label: 'Cluster Mode', icon: Layers }
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex items-center gap-3 px-8 py-3 rounded-full font-semibold transition-all duration-300 ${activeTab === tab.id
+                                        ? 'bg-[var(--primary-blue)] text-white shadow-md'
+                                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                                        }`}
+                                >
+                                    <tab.icon size={16} className={activeTab === tab.id ? 'text-[var(--primary-blue)]' : 'text-[var(--text-secondary)] opacity-40'} />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <AnimatePresence mode="wait">
+                        {activeTab === 'single' ? (
+                            <motion.div
+                                key="single"
+                                initial={{ opacity: 0, scale: 0.98, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.98, y: 10 }}
+                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                className="space-y-24"
                             >
-                                RETRY ANALYSIS
-                            </button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+                                <div className="max-w-5xl mx-auto">
+                                    <ExtractorForm
+                                        onExtract={handleExtract}
+                                        onReset={handleReset}
+                                        loading={loading}
+                                    />
+                                </div>
 
-            <AnimatePresence>
-                {toast && (
-                    <Toast
-                        message={toast.message}
-                        type={toast.type}
-                        onClose={() => setToast(null)}
-                    />
+                                {loading && (
+                                    <div className="max-w-4xl mx-auto">
+                                        <ProgressBar progress={progress} />
+                                    </div>
+                                )}
+
+                                <div ref={resultsRef} className="scroll-mt-48">
+                                    <ResultsDisplay data={data} onNotification={onNotification} />
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="bulk"
+                                initial={{ opacity: 0, scale: 0.98, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.98, y: 10 }}
+                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                className="max-w-6xl mx-auto"
+                            >
+                                <BulkProcessor onNotification={onNotification} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Capability Cards */}
+                {activeTab === 'single' && !data && !loading && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-48"
+                    >
+                        {[
+                            { icon: Shield, title: "Secure Handshake", desc: "Encryption layer ensures data integrity during live protocol extraction cycle.", color: "text-emerald-500", bg: "bg-emerald-50" },
+                            { icon: Cpu, title: "Neural Analysis", desc: "Advanced DOM processing identifies high-fidelity information patterns in real-time.", color: "text-blue-500", bg: "bg-blue-50" },
+                            { icon: Globe, title: "Global Reach", desc: "Distributed proxy network enables access across international nodes with high stealth.", color: "text-indigo-500", bg: "bg-indigo-50" }
+                        ].map((item, i) => (
+                            <div key={i} className="p-10 bg-white rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-lg transition-all group relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div className={`w-16 h-16 ${item.bg} ${item.color} rounded-xl flex items-center justify-center mb-8 group-hover:bg-[var(--primary-blue)] group-hover:text-white transition-all duration-500 shadow-sm`}>
+                                    <item.icon size={28} />
+                                </div>
+                                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">{item.title}</h3>
+                                <p className="text-base text-[var(--text-secondary)] leading-relaxed group-hover:opacity-100 transition-opacity">{item.desc}</p>
+                            </div>
+                        ))}
+                    </motion.div>
                 )}
-            </AnimatePresence>
 
-            {/* Shortcuts Help - Keyboard visible only */}
-            <div className="fixed bottom-6 left-6 hidden lg:flex flex-col gap-2 pointer-events-none opacity-20 hover:opacity-100 transition-opacity">
-                <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 dark:text-slate-500">
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-600 dark:text-slate-300 font-sans">CTRL + K</kbd>
-                    FOCUS SEARCH
-                </div>
-                <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 dark:text-slate-500">
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-600 dark:text-slate-300 font-sans">CTRL + D</kbd>
-                    TOGGLE THEME
-                </div>
-                <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 dark:text-slate-500">
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded text-gray-600 dark:text-slate-300 font-sans">CTRL + H</kbd>
-                    VIEW HISTORY
+                {/* Status Ticker */}
+                <div className="fixed bottom-8 right-8 hidden lg:flex items-center gap-6 bg-white/90 backdrop-blur-sm px-6 py-4 border border-[var(--border-color)] shadow-lg rounded-2xl z-[80] transition-all duration-300 hover:shadow-xl">
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                        </div>
+                        <span className="text-sm font-medium text-[var(--text-primary)]">System Online</span>
+                    </div>
+                    <div className="w-1 h-1 rounded-full bg-[var(--border-color)]"></div>
+                    <div className="flex items-center gap-3">
+                        <Database size={16} className="text-[var(--primary-blue)]" />
+                        <span className="text-sm font-medium text-[var(--text-secondary)]">v2.5.1 Enterprise</span>
+                    </div>
                 </div>
             </div>
         </main>

@@ -1,6 +1,5 @@
-import { FiDownload } from 'react-icons/fi';
+import { FiDownload, FiCopy, FiBox, FiActivity, FiFileText } from 'react-icons/fi';
 import { SiMicrosoftexcel } from 'react-icons/si';
-import { AiOutlineFileText } from 'react-icons/ai';
 
 const ExportButtons = ({ data, onNotification }) => {
     const downloadJSON = () => {
@@ -9,81 +8,93 @@ const ExportButtons = ({ data, onNotification }) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'extracted-data.json';
+        link.download = `extraction-data-${new Date().getTime()}.json`;
         link.click();
-        onNotification('JSON file downloaded!', 'success');
+        onNotification('JSON data exported', 'success');
     };
 
     const downloadCSV = () => {
-        let csv = 'Type,Value\n';
+        let csv = 'Type,Value,Source\n';
 
         data.phones?.forEach(phone => {
-            csv += `Phone,${phone}\n`;
+            csv += `Contact Node,${phone},Web Extract\n`;
         });
 
         data.emails?.forEach(email => {
-            csv += `Email,${email}\n`;
+            csv += `Email Node,${email},Web Extract\n`;
         });
 
         data.addresses?.forEach(address => {
-            csv += `Address,"${address.replace(/"/g, '""')}"\n`;
+            csv += `Location Node,"${address.replace(/"/g, '""')}",Web Extract\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'extracted-data.csv';
+        link.download = `extraction-report-${new Date().getTime()}.csv`;
         link.click();
-        onNotification('CSV file downloaded!', 'success');
+        onNotification('CSV report downloaded', 'success');
     };
 
     const copyAll = () => {
-        let text = '=== EXTRACTED DATA ===\n\n';
+        let text = '=== EXTRACTION SUMMARY ===\n\n';
 
-        text += '📞 PHONE NUMBERS:\n';
-        data.phones?.forEach(phone => text += `- ${phone}\n`);
+        if (data.phones?.length) {
+            text += 'CONTACT NUMBERS:\n';
+            data.phones.forEach(phone => text += `• ${phone}\n`);
+        }
 
-        text += '\n✉️ EMAIL ADDRESSES:\n';
-        data.emails?.forEach(email => text += `- ${email}\n`);
+        if (data.emails?.length) {
+            text += '\nEMAIL ADDRESSES:\n';
+            data.emails.forEach(email => text += `• ${email}\n`);
+        }
 
-        text += '\n📍 PHYSICAL ADDRESSES:\n';
-        data.addresses?.forEach(address => text += `- ${address}\n`);
+        if (data.addresses?.length) {
+            text += '\nPHYSICAL LOCATIONS:\n';
+            data.addresses.forEach(address => text += `• ${address}\n`);
+        }
 
         navigator.clipboard.writeText(text);
-        onNotification('All data copied to clipboard!', 'success');
+        onNotification('Summary copied to clipboard', 'success');
     };
 
     return (
-        <div className="flex flex-wrap gap-4 justify-center mt-10">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-12 relative px-4">
             <button
                 onClick={downloadCSV}
-                className="flex items-center gap-2 px-6 py-3 bg-green-600 
-          hover:bg-green-700 text-white rounded-xl 
-          transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/10"
+                className="group w-full md:w-auto flex items-center gap-4 px-8 py-4 bg-[var(--primary-blue)] text-white rounded-xl 
+          transition-all duration-300 hover:bg-[var(--primary-blue-dark)] active:scale-95 shadow-md shadow-blue-500/10"
             >
-                <SiMicrosoftexcel />
-                Export as CSV
+                <SiMicrosoftexcel className="text-xl" />
+                <div className="flex flex-col items-start">
+                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">Spreadsheet</span>
+                    <span className="text-sm font-bold uppercase tracking-tight">Export CSV</span>
+                </div>
             </button>
 
             <button
                 onClick={downloadJSON}
-                className="flex items-center gap-2 px-6 py-3 bg-primary-600 
-          hover:bg-primary-700 text-white rounded-xl 
-          transition-all duration-300 hover:scale-105 shadow-lg shadow-primary-500/10"
+                className="group w-full md:w-auto flex items-center gap-4 px-8 py-4 bg-white border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl 
+          transition-all duration-300 hover:bg-[var(--bg-secondary)] active:scale-95 shadow-sm"
             >
-                <FiDownload />
-                Export as JSON
+                <FiBox className="text-xl text-[var(--primary-blue)]" />
+                <div className="flex flex-col items-start">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">Raw Data</span>
+                    <span className="text-sm font-bold uppercase tracking-tight">Export JSON</span>
+                </div>
             </button>
 
             <button
                 onClick={copyAll}
-                className="flex items-center gap-2 px-6 py-3 bg-purple-600 
-          hover:bg-purple-700 text-white rounded-xl 
-          transition-all duration-300 hover:scale-105 shadow-lg shadow-purple-500/10"
+                className="group w-full md:w-auto flex items-center gap-4 px-8 py-4 bg-white border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl 
+          transition-all duration-300 hover:bg-[var(--bg-secondary)] active:scale-95 shadow-sm"
             >
-                <AiOutlineFileText />
-                Copy All
+                <FiCopy className="text-xl" />
+                <div className="flex flex-col items-start">
+                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">Clipboard</span>
+                    <span className="text-sm font-bold uppercase tracking-tight">Copy Summary</span>
+                </div>
             </button>
         </div>
     );

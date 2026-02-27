@@ -4,9 +4,11 @@ import {
     createUserWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
-    updateProfile
+    updateProfile,
+    signInWithPopup,
+    GoogleAuthProvider
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, googleProvider } from '../config/firebase';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -48,6 +50,26 @@ export const AuthProvider = ({ children }) => {
         return userCredential.user;
     };
 
+    const googleLogin = async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const idToken = await result.user.getIdToken();
+
+            // Sync with backend
+            await axios.post(`${API_URL}/auth/register-sync`, {
+                name: result.user.displayName,
+                email: result.user.email
+            }, {
+                headers: { Authorization: `Bearer ${idToken}` }
+            });
+
+            return result.user;
+        } catch (error) {
+            console.error("Google Auth failed", error);
+            throw error;
+        }
+    };
+
     const register = async (name, email, password) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
@@ -64,7 +86,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => signOut(auth);
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, token, loading, login, googleLogin, register, logout }}>
             {children}
         </AuthContext.Provider>
     );

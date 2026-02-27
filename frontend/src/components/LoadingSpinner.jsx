@@ -1,48 +1,42 @@
-import { motion } from 'framer-motion';
+import { FiActivity, FiCpu, FiLoader } from 'react-icons/fi';
 
 const LoadingSpinner = () => {
     return (
-        <div className="flex flex-col items-center justify-center py-16 space-y-8">
-            <div className="relative w-32 h-32">
-                {/* Pulsing Outer Glow */}
-                <div className="absolute inset-0 bg-primary-500/10 dark:bg-primary-500/20 rounded-full animate-pulse blur-2xl"></div>
+        <div className="flex flex-col items-center justify-center p-32 relative overflow-hidden">
+            <div className="relative">
+                {/* Main Spinner */}
+                <div className="w-24 h-24 rounded-full border-[10px] border-blue-50 border-t-black animate-spin relative z-10 shadow-2xl"></div>
 
-                {/* Animated Rings */}
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 border-[3px] border-gray-100 dark:border-slate-800 rounded-full"
-                />
+                {/* Secondary Spinner */}
+                <div className="absolute inset-0 w-24 h-24 rounded-full border-4 border-transparent border-b-[var(--primary-blue)] animate-spin-slow opacity-60"></div>
 
-                <motion.div
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-4 border-[3px] border-transparent border-t-primary-500 rounded-full"
-                />
-
-                <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-10 bg-gradient-to-br from-primary-400 to-cyan-400 rounded-full shadow-[0_0_20px_rgba(14,165,233,0.4)]"
-                />
-
-                {/* Orbit Dots */}
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0"
-                >
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary-500 rounded-full shadow-[0_0_10px_rgb(14,165,233)]"></div>
-                </motion.div>
+                {/* Center Point */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-black rounded-full animate-pulse shadow-[0_0_15px_rgba(0,0,0,0.5)]"></div>
+                </div>
             </div>
 
-            <div className="text-center space-y-3">
-                <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-                    DEEP SCANNING <span className="text-primary-500 animate-pulse">...</span>
-                </h3>
-                <p className="text-gray-500 dark:text-slate-400 text-sm font-medium uppercase tracking-[0.2em] max-w-xs mx-auto">
-                    Resolving website nodes and extracting patterns
-                </p>
+            <div className="mt-12 text-center relative z-10">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                    <FiCpu className="text-[var(--primary-blue)] animate-pulse" />
+                    <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight uppercase italic">Resolving Neural Node</h3>
+                </div>
+                <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] opacity-40 animate-shimmer italic">Establishing authorized data handshake...</p>
+            </div>
+
+            {/* Matrix Stats */}
+            <div className="mt-10 flex gap-4 bg-[var(--bg-secondary)] p-3 rounded-2xl border border-[var(--border-color)]/30">
+                {[0, 1, 2].map((i) => (
+                    <div
+                        key={i}
+                        className="w-2 h-3 bg-black/10 rounded-full overflow-hidden"
+                    >
+                        <div
+                            className="w-full h-full bg-black animate-bounce"
+                            style={{ animationDelay: `${i * 0.15}s` }}
+                        ></div>
+                    </div>
+                ))}
             </div>
         </div>
     );

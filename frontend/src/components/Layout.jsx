@@ -1,18 +1,21 @@
-import { useContext } from 'react';
-import { ThemeContext } from '../context/ThemeContext';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import CookieBanner from './CookieBanner';
 
-const Layout = ({ children, onOpenHistory, onOpenAuth, onOpenApi }) => {
-    const { theme } = useContext(ThemeContext);
-
+const Layout = ({ children, onOpenHistory, onOpenAuth, onOpenApi, onOpenSecurity, onOpenIP, onOpenAdvanced }) => {
     return (
-        <div className={`min-h-screen transition-colors duration-500 overflow-x-hidden ${theme === 'dark' ? 'dark bg-appDark' : 'bg-white'}`}>
-            <Navbar onOpenHistory={onOpenHistory} onOpenAuth={onOpenAuth} onOpenApi={onOpenApi} />
-            <div className="pt-20">
+        <div className="min-h-screen bg-[var(--bg-main)] transition-colors duration-500 overflow-x-hidden">
+            <Navbar
+                onOpenHistory={onOpenHistory}
+                onOpenAuth={onOpenAuth}
+                onOpenApi={onOpenApi}
+                onOpenSecurity={onOpenSecurity}
+                onOpenIP={onOpenIP}
+                onOpenAdvanced={onOpenAdvanced}
+            />
+            <main className="relative">
                 {children}
-            </div>
+            </main>
             <Footer />
             <CookieBanner />
         </div>

@@ -16,9 +16,10 @@ import Layout from './components/Layout';
 import AuthModal from './components/AuthModal';
 import HistoryPage from './pages/HistoryPage';
 import ApiDocsPage from './pages/ApiDocsPage';
-
-// Hooks
-import { useHistory } from './hooks/useHistory';
+import SecurityScannerPage from './pages/SecurityScannerPage';
+import IPIntelligence from './components/IPIntelligence';
+import AdvancedScanner from './components/AdvancedScanner';
+import Toast from './components/Toast';
 
 // Scroll to top component
 const ScrollToTop = () => {
@@ -31,52 +32,76 @@ const ScrollToTop = () => {
 
 function App() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
-    const [view, setView] = useState('home'); // 'home', 'history', 'api'
+    const [view, setView] = useState('home'); // 'home', 'history', 'api', etc.
+    const [notification, setNotification] = useState(null);
+
+    const showNotification = (message, type = 'success') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 4000);
+    };
 
     return (
         <Router>
             <ScrollToTop />
-            <Layout
-                onOpenAuth={() => setIsAuthOpen(true)}
-                onOpenHistory={() => setView('history')}
-                onOpenApi={() => setView('api')}
-            >
-                <div className="container mx-auto">
-                    {view === 'history' ? (
-                        <HistoryPage
-                            onBack={() => setView('home')}
-                            onReExtract={(url) => {
-                                setView('home');
-                                window.location.href = `/?url=${encodeURIComponent(url)}`;
-                            }}
-                        />
-                    ) : view === 'api' ? (
-                        <ApiDocsPage onBack={() => setView('home')} />
-                    ) : (
-                        <Routes>
-                            <Route
-                                path="/"
-                                element={
-                                    <Home
-                                        onOpenHistory={() => setView('history')}
-                                        addToHistory={() => { }} // History handled by DB now
-                                    />
-                                }
+            <div className="relative min-h-screen bg-[var(--bg-main)] selection:bg-black selection:text-white">
+                <Layout
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                    onOpenHistory={() => setView('history')}
+                    onOpenApi={() => setView('api')}
+                    onOpenSecurity={() => setView('security')}
+                    onOpenIP={() => setView('ip')}
+                    onOpenAdvanced={() => setView('advanced-scan')}
+                >
+                    <div className="w-full">
+                        {view === 'history' ? (
+                            <HistoryPage
+                                onBack={() => setView('home')}
+                                onReExtract={(url) => {
+                                    setView('home');
+                                    // Handle re-extraction logic if needed or just scroll to form
+                                }}
                             />
-                            <Route path="/docs" element={<Docs />} />
-                            <Route path="/api-reference" element={<ApiReference />} />
-                            <Route path="/community" element={<Community />} />
-                            <Route path="/privacy" element={<Privacy />} />
-                            <Route path="/terms" element={<Terms />} />
-                            <Route path="/security" element={<Security />} />
-                        </Routes>
-                    )}
-                </div>
-            </Layout>
+                        ) : view === 'api' ? (
+                            <ApiDocsPage onBack={() => setView('home')} />
+                        ) : view === 'security' ? (
+                            <SecurityScannerPage onBack={() => setView('home')} />
+                        ) : view === 'ip' ? (
+                            <IPIntelligence onBack={() => setView('home')} />
+                        ) : view === 'advanced-scan' ? (
+                            <AdvancedScanner onBack={() => setView('home')} />
+                        ) : (
+                            <Routes>
+                                <Route
+                                    path="/"
+                                    element={
+                                        <Home
+                                            onNotification={showNotification}
+                                            onOpenHistory={() => setView('history')}
+                                        />
+                                    }
+                                />
+                                <Route path="/docs" element={<Docs />} />
+                                <Route path="/api-reference" element={<ApiReference />} />
+                                <Route path="/community" element={<Community />} />
+                                <Route path="/privacy" element={<Privacy />} />
+                                <Route path="/terms" element={<Terms />} />
+                                <Route path="/security" element={<Security />} />
+                            </Routes>
+                        )}
+                    </div>
+                </Layout>
+            </div>
 
             <AnimatePresence>
                 {isAuthOpen && (
                     <AuthModal onClose={() => setIsAuthOpen(false)} />
+                )}
+                {notification && (
+                    <Toast
+                        message={notification.message}
+                        type={notification.type}
+                        onClose={() => setNotification(null)}
+                    />
                 )}
             </AnimatePresence>
         </Router>

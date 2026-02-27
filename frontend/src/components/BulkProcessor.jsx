@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { FiUpload, FiX, FiPlus, FiPlay, FiDownload, FiCheckCircle, FiAlertCircle, FiGlobe, FiRefreshCw } from 'react-icons/fi';
+import {
+    FiUpload, FiX, FiPlus, FiPlay, FiDownload, FiCheckCircle,
+    FiAlertCircle, FiGlobe, FiRefreshCw, FiArrowRight, FiActivity, FiLayers, FiSearch, FiDatabase
+} from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const BulkProcessor = ({ onNotification }) => {
     const [urls, setUrls] = useState(['']);
@@ -9,14 +12,6 @@ const BulkProcessor = ({ onNotification }) => {
     const [results, setResults] = useState([]);
     const [currentUrl, setCurrentUrl] = useState('');
     const [summary, setSummary] = useState(null);
-    const containerRef = useRef(null);
-
-    useEffect(() => {
-        gsap.fromTo(containerRef.current,
-            { opacity: 0, scale: 0.95 },
-            { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out' }
-        );
-    }, []);
 
     const addUrl = () => {
         if (urls.length < 20) {
@@ -45,14 +40,14 @@ const BulkProcessor = ({ onNotification }) => {
             const fileUrls = text.split('\n')
                 .map(url => url.trim())
                 .filter(url => url.startsWith('http'))
-                .filter((v, i, a) => a.indexOf(v) === i); // deduplicate
+                .filter((v, i, a) => a.indexOf(v) === i);
 
             if (fileUrls.length > 20) {
-                onNotification('Maximum 20 URLs allowed. Taking first 20.', 'warning');
+                onNotification('Limit reached: 20 URLs maximum. Selecting first 20.', 'warning');
                 setUrls(fileUrls.slice(0, 20));
             } else if (fileUrls.length > 0) {
                 setUrls(fileUrls);
-                onNotification(`Imported ${fileUrls.length} URLs from file.`, 'success');
+                onNotification(`Successfully imported ${fileUrls.length} URLs.`, 'success');
             } else {
                 onNotification('No valid URLs found in file.', 'error');
             }
@@ -64,7 +59,7 @@ const BulkProcessor = ({ onNotification }) => {
         const validUrls = urls.filter(url => url.trim().startsWith('http'));
 
         if (validUrls.length === 0) {
-            onNotification('Please add at least one valid URL', 'error');
+            onNotification('Please enter at least one valid URL.', 'error');
             return;
         }
 
@@ -74,7 +69,7 @@ const BulkProcessor = ({ onNotification }) => {
         setSummary(null);
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || '/api';
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
             const token = localStorage.getItem('token');
 
             const response = await fetch(`${API_URL}/bulk`, {
@@ -115,17 +110,17 @@ const BulkProcessor = ({ onNotification }) => {
                             } else if (data.type === 'complete') {
                                 setSummary(data.summary);
                                 setProgress(100);
-                                onNotification('Bulk extraction complete!', 'success');
+                                onNotification('Bulk processing complete', 'success');
                             }
                         } catch (e) {
-                            console.error('SSE Parse Error:', e);
+                            console.error('Parsing error:', e);
                         }
                     }
                 }
             }
 
         } catch (error) {
-            onNotification('Bulk processing failed: ' + error.message, 'error');
+            onNotification('Processing failed: ' + error.message, 'error');
         } finally {
             setProcessing(false);
         }
@@ -158,77 +153,82 @@ const BulkProcessor = ({ onNotification }) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `bulk-intelligence-${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = `bulk-extraction-${new Date().getTime()}.csv`;
         link.click();
         window.URL.revokeObjectURL(url);
-        onNotification('CSV exported successfully!', 'success');
+        onNotification('Data exported to CSV', 'success');
     };
 
     return (
-        <div ref={containerRef} className="w-full max-w-5xl mx-auto font-sans">
-            {/* Search Header */}
+        <div className="w-full max-w-7xl mx-auto font-sans px-6">
+            {/* Header */}
             {!processing && results.length === 0 && (
-                <div className="text-center mb-12">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-4">
-                        <FiRefreshCw className="animate-spin-slow" /> Multi-Target Extraction Engine
+                <div className="text-center mb-20 pt-10">
+                    <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-blue-50 border border-blue-100 text-[var(--primary-blue)] text-[10px] font-black uppercase tracking-[0.3em] mb-8">
+                        <FiLayers /> Enterprise Batch Protocol
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter mb-4">
-                        Bulk Intelligence.
+                    <h2 className="text-4xl md:text-7xl font-black text-[var(--text-primary)] tracking-tighter mb-6 uppercase italic">
+                        Batch <span className="text-[var(--primary-blue)]">Processing</span> Engine
                     </h2>
-                    <p className="text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
-                        Scan up to 20 domains simultaneously. Deep-extract contact nodes, social identities, and corporate profiles across multiple infrastructures in a single session.
+                    <p className="text-[var(--text-secondary)] max-w-3xl mx-auto text-xl font-medium leading-relaxed opacity-60">
+                        Scale your intel acquisition. Deploy up to 20 parallel extraction nodes simultaneously for high-throughput data harvesting.
                     </p>
                 </div>
             )}
 
             {/* URL Input Area */}
             {!processing && results.length === 0 && (
-                <div className="bg-slate-900/50 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/5 shadow-2xl">
-                    <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-                        <h3 className="text-white text-xl font-bold italic tracking-tight">Data Targets ({urls.filter(u => u.trim()).length}/20)</h3>
-                        <div className="flex gap-3 w-full md:w-auto">
-                            {/* File Upload */}
-                            <label className="flex-1 md:flex-none cursor-pointer flex items-center justify-center gap-2 px-6 py-3 
-                bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-white hover:bg-white/10 transition-all text-xs font-bold uppercase tracking-widest group">
-                                <FiUpload className="group-hover:-translate-y-1 transition-transform" />
-                                Upload CSV
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="pro-card p-10 md:p-16 bg-white border border-[var(--border-color)] shadow-2xl rounded-[3rem] relative overflow-hidden group"
+                >
+                    <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8 relative z-10">
+                        <div>
+                            <h3 className="text-[var(--text-primary)] text-3xl font-black uppercase tracking-tight italic mb-2">Target Acquisition Queue</h3>
+                            <p className="text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.3em] opacity-40">{urls.filter(u => u.trim()).length} / 20 NODES ACTIVE</p>
+                        </div>
+                        <div className="flex gap-4 w-full md:w-auto">
+                            <label className="flex-1 md:flex-none cursor-pointer flex items-center justify-center gap-3 px-8 py-4 
+                bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white transition-all text-[10px] font-black uppercase tracking-[0.2em] group shadow-sm">
+                                <FiUpload size={16} />
+                                Import Dataset
                                 <input type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
                             </label>
                             <button
                                 onClick={addUrl}
                                 disabled={urls.length >= 20}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 
-                  text-white rounded-2xl hover:bg-blue-700 transition-all text-xs font-bold uppercase tracking-widest
-                  disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
+                                className="flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] 
+                  text-[var(--text-primary)] rounded-2xl hover:bg-white transition-all text-[10px] font-black uppercase tracking-[0.2em]
+                  disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
                             >
-                                <FiPlus /> Add Row
+                                <FiPlus size={16} /> Append Node
                             </button>
                         </div>
                     </div>
 
-                    <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-4 mb-8">
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-6 mb-12 relative z-10 custom-scrollbar-pro">
                         {urls.map((url, index) => (
-                            <div key={index} className="flex gap-3 group">
+                            <div key={index} className="url-row flex gap-4 group/row">
                                 <div className="flex-1 relative">
-                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-[10px]">
-                                        {index + 1 < 10 ? `0${index + 1}` : index + 1}.
+                                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] font-black text-[10px] tracking-widest opacity-30">
+                                        NODE_{index + 1 < 10 ? `0${index + 1}` : index + 1}
                                     </div>
                                     <input
                                         type="text"
                                         value={url}
                                         onChange={(e) => updateUrl(index, e.target.value)}
-                                        placeholder="https://example-domain.com"
-                                        className="w-full pl-12 pr-6 py-4 bg-black/20 border border-white/5 
-                        rounded-2xl text-white placeholder-slate-600 focus:outline-none 
-                        focus:border-blue-500/50 transition-all text-sm font-mono"
+                                        placeholder="HTTPS://TARGET-INFRASTRUCTURE.COM"
+                                        className="w-full pl-24 pr-8 py-5 bg-[var(--bg-secondary)] border border-transparent 
+                        rounded-2xl text-[var(--text-primary)] placeholder-[var(--text-secondary)]/30 focus:outline-none 
+                        focus:border-[var(--primary-blue)]/30 focus:bg-white transition-all text-sm font-bold uppercase tracking-tight shadow-inner"
                                     />
                                 </div>
                                 <button
                                     onClick={() => removeUrl(index)}
-                                    className="p-4 bg-red-500/10 text-red-500 rounded-2xl 
-                    hover:bg-red-500/20 transition-all opacity-40 group-hover:opacity-100"
+                                    className="p-5 text-red-500/30 rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover/row:opacity-100 border border-transparent hover:border-red-100"
                                 >
-                                    <FiX />
+                                    <FiX size={20} />
                                 </button>
                             </div>
                         ))}
@@ -236,53 +236,69 @@ const BulkProcessor = ({ onNotification }) => {
 
                     <button
                         onClick={startBulkProcessing}
-                        className="w-full py-5 bg-gradient-to-r from-blue-600 to-purple-600 
-              text-white font-black uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-[1.02] transition-all 
-              flex items-center justify-center gap-3 shadow-2xl shadow-blue-600/20 active:scale-95"
+                        className="pro-button-primary w-full py-8 flex items-center justify-center gap-6 text-xs font-black uppercase tracking-[0.4em] shadow-2xl shadow-blue-600/30 rounded-3xl active:scale-[0.98] transition-transform"
                     >
-                        <FiPlay className="text-xl" /> Initialize Extraction Sequence
+                        <FiPlay size={24} /> Execute Master Batch Sequence
                     </button>
-                </div>
+                </motion.div>
             )}
 
             {/* Progress & Live Logs */}
             {processing && (
-                <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 shadow-2xl">
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 className="text-2xl font-black text-white italic tracking-tighter mb-1">Processing Batch.</h3>
-                            <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest">Target Instance: {currentUrl || 'Establishing connection...'}</p>
-                        </div>
-                        <div className="text-right">
-                            <span className="text-4xl font-black text-white italic tabular-nums">{progress}%</span>
-                        </div>
-                    </div>
+                <div className="pro-card p-12 md:p-20 bg-black text-white shadow-2xl rounded-[4rem] border-none overflow-hidden relative">
+                    <div className="absolute top-0 left-0 w-full h-full bg-grid opacity-[0.03] pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
 
-                    <div className="w-full h-4 bg-white/5 rounded-full overflow-hidden border border-white/5 p-1 mb-8">
-                        <div
-                            className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-700 ease-out"
-                            style={{ width: `${progress}%` }}
-                        />
-                    </div>
-
-                    {/* Mini Results Log */}
-                    <div className="bg-black/40 rounded-3xl p-6 font-mono text-xs space-y-2 max-h-40 overflow-y-auto custom-scrollbar border border-white/5">
-                        {results.map((res, i) => (
-                            <div key={i} className="flex gap-4 border-b border-white/5 pb-2 last:border-0">
-                                <span className={res.status === 'success' ? 'text-green-500' : 'text-red-500'}>
-                                    {res.status === 'success' ? '✔' : '✘'}
-                                </span>
-                                <span className="text-slate-500 truncate w-40">{res.url}</span>
-                                {res.status === 'success' && (
-                                    <span className="text-blue-400 italic">
-                                        [{res.data.phones.length}p, {res.data.emails.length}e, {res.data.socialMedia ? 's' : ''}]
-                                    </span>
-                                )}
+                    <div className="relative z-10">
+                        <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-10">
+                            <div>
+                                <h3 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic mb-6">Processing Batch</h3>
+                                <div className="flex items-center gap-4 text-[var(--primary-blue)] text-xs font-black uppercase tracking-[0.3em]">
+                                    <div className="w-2 h-2 bg-[var(--primary-blue)] rounded-full animate-ping"></div>
+                                    Current Channel: <span className="text-white/60 truncate max-w-xs">{currentUrl || 'Initializing Protocol...'}</span>
+                                </div>
                             </div>
-                        ))}
-                        <div className="animate-pulse flex gap-4 text-blue-400/60">
-                            <span>→</span>
-                            <span>Extracting patterns from {currentUrl}...</span>
+                            <div className="text-right">
+                                <span className="text-8xl font-black text-[var(--primary-blue)] leading-none tracking-tighter tabular-nums italic">{Math.round(progress)}%</span>
+                            </div>
+                        </div>
+
+                        <div className="w-full h-4 bg-white/5 rounded-full overflow-hidden mb-16 relative border border-white/10 p-1">
+                            <motion.div
+                                className="h-full bg-gradient-to-r from-[var(--primary-blue)] via-blue-400 to-[var(--primary-blue)] rounded-full"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                transition={{ duration: 0.5 }}
+                            ></motion.div>
+                        </div>
+
+                        {/* Mini Results Log */}
+                        <div className="bg-white/5 backdrop-blur-md rounded-[2rem] p-8 space-y-4 max-h-80 overflow-y-auto border border-white/10 custom-scrollbar-pro">
+                            {results.length === 0 && (
+                                <div className="flex items-center justify-center py-20 gap-4 text-white/30">
+                                    <FiRefreshCw className="animate-spin" size={20} />
+                                    <span className="uppercase font-black text-[10px] tracking-[0.4em]">Establishing Secure Uplinks...</span>
+                                </div>
+                            )}
+                            {results.map((res, i) => (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    key={i}
+                                    className="flex gap-6 border-b border-white/5 pb-4 last:border-0 items-center"
+                                >
+                                    <div className={`w-3 h-3 rounded-full ${res.status === 'success' ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}></div>
+                                    <span className={`font-black uppercase tracking-[0.2em] w-20 text-[10px] ${res.status === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {res.status === 'success' ? 'VALID' : 'ERROR'}
+                                    </span>
+                                    <span className="text-white/50 text-xs font-bold truncate flex-1 uppercase tracking-wider">{res.url.replace(/https?:\/\//, '')}</span>
+                                    {res.status === 'success' && (
+                                        <span className="text-[var(--primary-blue)] font-black text-[10px] uppercase tracking-[0.2em] bg-blue-500/10 px-4 py-1.5 rounded-full border border-blue-500/20">
+                                            {res.data.phones.length + res.data.emails.length} NODES
+                                        </span>
+                                    )}
+                                </motion.div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -290,112 +306,118 @@ const BulkProcessor = ({ onNotification }) => {
 
             {/* Summary Stats */}
             {summary && (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-12"
+                >
                     {[
-                        { label: 'Success', value: summary.successful, color: 'text-green-500', bg: 'bg-green-500/10' },
-                        { label: 'Failed', value: summary.failed, color: 'text-red-500', bg: 'bg-red-500/10' },
-                        { label: 'Phones', value: summary.totalPhones, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                        { label: 'Emails', value: summary.totalEmails, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
-                        { label: 'Sociab', value: summary.successful > 0 ? results.filter(r => r.status === 'success' && r.data.socialMedia).length : 0, color: 'text-pink-500', bg: 'bg-pink-500/10' },
+                        { label: 'Validated', value: summary.successful, color: 'text-emerald-600', icon: FiCheckCircle, bg: 'bg-emerald-50' },
+                        { label: 'Rejected', value: summary.failed, color: 'text-red-600', icon: FiAlertCircle, bg: 'bg-red-50' },
+                        { label: 'Comm Nodes', value: summary.totalPhones, color: 'text-blue-600', icon: FiActivity, bg: 'bg-blue-50' },
+                        { label: 'Intel Gateways', value: summary.totalEmails, color: 'text-indigo-600', icon: FiGlobe, bg: 'bg-indigo-50' },
+                        { label: 'Digital Sync', value: results.filter(r => r.status === 'success' && r.data.socialMedia).length, color: 'text-sky-600', icon: FiSearch, bg: 'bg-sky-50' },
                     ].map((stat, i) => (
-                        <div key={i} className={`${stat.bg} rounded-3xl p-6 border border-white/5 text-center transition-transform hover:scale-105`}>
-                            <p className={`text-3xl font-black ${stat.color} italic tracking-tighter`}>{stat.value}</p>
-                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mt-1">{stat.label}</p>
+                        <div key={i} className={`${stat.bg} rounded-[2rem] p-8 border border-transparent shadow-xl flex flex-col items-center justify-center text-center`}>
+                            <p className={`text-4xl font-black ${stat.color} mb-2 italic tracking-tighter`}>{stat.value}</p>
+                            <p className="text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.2em] opacity-50">{stat.label}</p>
                         </div>
                     ))}
-                </div>
+                </motion.div>
             )}
 
             {/* Final Results Table */}
             {results.length > 0 && !processing && (
-                <div className="bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden mb-20">
-                    <div className="flex flex-col md:flex-row items-center justify-between p-8 border-b border-white/5 gap-4">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="pro-card bg-white border border-[var(--border-color)] rounded-[3rem] shadow-2xl overflow-hidden mb-32"
+                >
+                    <div className="flex flex-col lg:flex-row items-center justify-between p-12 border-b border-[var(--border-color)] gap-8 bg-[var(--bg-secondary)]/30 backdrop-blur-sm">
                         <div>
-                            <h3 className="text-2xl font-black text-white italic tracking-tighter">Extraction Report.</h3>
-                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Intelligence finalized: {results.length} nodes analyzed</p>
+                            <h3 className="text-3xl font-black text-[var(--text-primary)] tracking-tight uppercase italic mb-2">Extraction Summary</h3>
+                            <p className="text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.3em] opacity-40">{results.length} INDEPENDENT DOMAINS PROCESSED</p>
                         </div>
-                        <div className="flex gap-3 w-full md:w-auto">
+                        <div className="flex gap-4 w-full lg:w-auto">
                             <button
                                 onClick={() => { setResults([]); setUrls(['']); setSummary(null); }}
-                                className="flex-1 md:flex-none px-6 py-3 bg-white/5 text-gray-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:text-white transition-all border border-white/5"
+                                className="flex-1 lg:flex-none px-8 py-4 bg-white text-[var(--text-secondary)] font-black rounded-2xl text-[10px] uppercase tracking-[0.2em] hover:text-red-500 hover:border-red-500 border border-[var(--border-color)] transition-all shadow-sm"
                             >
-                                Reset Workshop
+                                Purge Session
                             </button>
                             <button
                                 onClick={exportAllToCSV}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-3 bg-green-600 
-                  text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl shadow-green-600/20"
+                                className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-10 py-4 bg-black text-white font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:bg-[var(--primary-blue)] transition-all shadow-2xl shadow-blue-600/20"
                             >
-                                <FiDownload /> Export CSV Report
+                                <FiDownload size={18} /> Export Master CSV
                             </button>
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-left font-sans">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
                             <thead>
-                                <tr className="bg-black/20">
-                                    <th className="p-6 text-gray-500 text-[10px] font-black uppercase tracking-widest">Instance / Website</th>
-                                    <th className="p-6 text-gray-500 text-[10px] font-black uppercase tracking-widest">Company Node</th>
-                                    <th className="p-6 text-gray-500 text-[10px] font-black uppercase tracking-widest text-center">Nodes</th>
-                                    <th className="p-6 text-gray-500 text-[10px] font-black uppercase tracking-widest text-center">Digital Path</th>
-                                    <th className="p-6 text-gray-500 text-[10px] font-black uppercase tracking-widest">Status Matrix</th>
+                                <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)]">
+                                    <th className="p-8 text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Master Asset</th>
+                                    <th className="p-8 text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Layer Sync</th>
+                                    <th className="p-8 text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.3em] opacity-60 text-center">Data Points</th>
+                                    <th className="p-8 text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.3em] opacity-60 text-center">Integrity</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/5">
+                            <tbody className="divide-y divide-[var(--border-color)]">
                                 {results.map((result, i) => (
-                                    <tr key={i} className="hover:bg-white/5 transition-colors group">
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                                                    <FiGlobe className="text-blue-500" />
+                                    <tr key={i} className="hover:bg-[var(--bg-secondary)]/30 transition-colors group/tr">
+                                        <td className="p-8">
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center border border-[var(--border-color)] shadow-sm group-hover/tr:bg-[var(--primary-blue)] group-hover/tr:text-white transition-all">
+                                                    <FiGlobe size={20} />
                                                 </div>
-                                                <a href={result.url} target="_blank" rel="noopener noreferrer"
-                                                    className="text-white font-bold text-sm tracking-tight hover:text-blue-400 transition-colors truncate block max-w-[200px]">
-                                                    {result.url.replace(/https?:\/\/(www\.)?/, '')}
-                                                </a>
-                                            </div>
-                                        </td>
-                                        <td className="p-6">
-                                            <p className="text-slate-400 text-sm font-medium italic truncate max-w-[150px]">
-                                                {result.data?.companyInfo?.name || '- -'}
-                                            </p>
-                                        </td>
-                                        <td className="p-6">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <div className="flex flex-col items-center">
-                                                    <span className="text-white font-black text-xs">{result.data?.phones?.length || 0}</span>
-                                                    <span className="text-[8px] text-slate-600 uppercase">ph</span>
-                                                </div>
-                                                <div className="w-px h-6 bg-white/5 mx-1"></div>
-                                                <div className="flex flex-col items-center">
-                                                    <span className="text-white font-black text-xs">{result.data?.emails?.length || 0}</span>
-                                                    <span className="text-[8px] text-slate-600 uppercase">em</span>
+                                                <div className="max-w-[200px] md:max-w-md">
+                                                    <p className="text-[var(--text-primary)] font-black uppercase tracking-tight truncate leading-tight italic">
+                                                        {result.url.replace(/https?:\/\/(www\.)?/, '')}
+                                                    </p>
+                                                    <p className="text-[10px] text-[var(--text-secondary)] uppercase font-bold tracking-widest opacity-60 mt-1">
+                                                        {result.data?.companyInfo?.name || 'GENERIC INFRASTRUCTURE'}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-6">
-                                            <div className="flex justify-center flex-wrap gap-1 max-w-[120px] mx-auto">
-                                                {result.data?.socialMedia && Object.entries(result.data.socialMedia)
-                                                    .filter(([k, v]) => k !== 'whatsapp' && v)
-                                                    .map(([platform], idx) => (
-                                                        <span key={idx} className="w-2 h-2 rounded-full bg-blue-500" title={platform} />
-                                                    ))
-                                                }
-                                                {result.data?.socialMedia?.whatsapp?.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500" title="WhatsApp" />}
-                                            </div>
-                                        </td>
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-2">
-                                                {result.status === 'success' ? (
-                                                    <FiCheckCircle className="text-green-500" />
-                                                ) : (
-                                                    <FiAlertCircle className="text-red-500" />
+                                        <td className="p-8">
+                                            <div className="flex flex-wrap gap-2">
+                                                {result.data?.socialMedia && (
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-lg bg-sky-50 text-sky-600 text-[9px] font-black uppercase tracking-widest border border-sky-100">SOCIAL_LAYER</span>
                                                 )}
-                                                <span className={`text-[10px] font-black uppercase tracking-widest ${result.status === 'success' ? 'text-green-400' : 'text-red-400'
-                                                    }`}>
-                                                    {result.status}
-                                                </span>
+                                                {result.data?.companyInfo && (
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest border border-indigo-100">CORP_LAYER</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="p-8">
+                                            <div className="flex items-center justify-center gap-6">
+                                                <div className="text-center">
+                                                    <p className="text-[var(--text-primary)] font-black text-xl italic leading-none tabular-nums">{result.data?.phones?.length || 0}</p>
+                                                    <p className="text-[8px] text-[var(--text-secondary)] font-black uppercase tracking-[0.2em] opacity-40 mt-2">Comm</p>
+                                                </div>
+                                                <div className="w-px h-8 bg-[var(--border-color)]"></div>
+                                                <div className="text-center">
+                                                    <p className="text-[var(--text-primary)] font-black text-xl italic leading-none tabular-nums">{result.data?.emails?.length || 0}</p>
+                                                    <p className="text-[8px] text-[var(--text-secondary)] font-black uppercase tracking-[0.2em] opacity-40 mt-2">Intel</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-8">
+                                            <div className="flex items-center justify-center">
+                                                {result.status === 'success' ? (
+                                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100 shadow-sm">
+                                                        <FiCheckCircle size={14} />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Verified</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-2xl border border-red-100 shadow-sm">
+                                                        <FiAlertCircle size={14} />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Error</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -403,7 +425,7 @@ const BulkProcessor = ({ onNotification }) => {
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </motion.div>
             )}
         </div>
     );

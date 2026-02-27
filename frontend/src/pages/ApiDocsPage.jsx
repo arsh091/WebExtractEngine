@@ -1,42 +1,35 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FiCopy, FiKey, FiCode, FiZap, FiRefreshCw, FiExternalLink, FiTerminal, FiDatabase } from 'react-icons/fi';
+import { FiCopy, FiKey, FiZap, FiTerminal, FiDatabase, FiArrowLeft, FiCode, FiLayers, FiActivity, FiCheck, FiCpu, FiGlobe, FiCommand } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
 const CODE_EXAMPLES = {
-    javascript: `// JavaScript Fetch Example
+    javascript: `// GET extraction-v1
 const response = await fetch(
-  'https://webextractengine.onrender.com/api/v1/extract?url=https://example.com',
+  'https://webextract.pro/api/v1/extract?url=https://target.com',
   {
-    headers: {
-      'x-api-key': 'wxe_live_your_api_key_here'
-    }
+    headers: { 'x-api-key': 'your_access_token' }
   }
 );
 
 const data = await response.json();
-const { phones, emails, company } = data.data;
-console.log('Intelligence Gathering Complete:', { phones, emails, company });`,
+console.log('Target Intelligence:', data.data);`,
 
-    python: `# Python Requests Example
+    python: `# Target Intelligence Gathering
 import requests
 
-api_url = 'https://webextractengine.onrender.com/api/v1/extract'
-params = {'url': 'https://example.com'}
-headers = {'x-api-key': 'wxe_live_your_api_key_here'}
+endpoint = 'https://webextract.pro/api/v1/extract'
+params = {'url': 'https://target.com'}
+headers = {'x-api-key': 'your_access_token'}
 
-response = requests.get(api_url, params=params, headers=headers)
-data = response.json()
+res = requests.get(endpoint, params=params, headers=headers)
+print(res.json())`,
 
-if data['success']:
-    print(f"Found {data['data']['count']['phones']} phone nodes")
-    print(f"Emails: {data['data']['emails']}")`,
-
-    curl: `# cURL Terminal Example
+    curl: `# Terminal Authentication
 curl -X GET \\
-  "https://webextractengine.onrender.com/api/v1/extract?url=https://example.com" \\
-  -H "x-api-key: wxe_live_your_api_key_here"`,
+  "https://webextract.pro/api/v1/extract?url=https://target.com" \\
+  -H "x-api-key: your_access_token"`,
 };
 
 const ApiDocsPage = ({ onBack }) => {
@@ -62,7 +55,7 @@ const ApiDocsPage = ({ onBack }) => {
             });
             setUsage(res.data.usage);
         } catch (e) {
-            console.error('Usage sync failed');
+            console.error('Usage retrieval failed');
         }
     };
 
@@ -75,7 +68,6 @@ const ApiDocsPage = ({ onBack }) => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setApiKey(res.data.apiKey);
-            onNotification?.('Secret Key Generated Successfully', 'success');
         } catch (err) {
             console.error('Key generation failed');
         } finally {
@@ -84,7 +76,7 @@ const ApiDocsPage = ({ onBack }) => {
     };
 
     const revokeKey = async () => {
-        if (!token || !confirm('Permanently revoke these credentials? Active integrations will fail.')) return;
+        if (!token || !confirm('Permanently revoke these credentials? Active integrations will be terminated.')) return;
         setLoading(true);
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -108,187 +100,213 @@ const ApiDocsPage = ({ onBack }) => {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-6xl mx-auto px-4 pb-32"
+            className="max-w-7xl mx-auto px-6 pb-32 pt-10 font-sans"
         >
             {/* Hero Header */}
-            <div className="text-center mb-16 pt-10 relative">
+            <div className="mb-20">
                 <button
                     onClick={onBack}
-                    className="absolute left-0 top-10 flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest group"
+                    className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-[var(--primary-blue)] mb-12 hover:translate-x-[-8px] transition-all group"
                 >
-                    <FiTerminal className="rotate-180 group-hover:-translate-x-1 transition-transform" /> Return to Base
+                    <FiArrowLeft className="group-hover:scale-125 transition-transform" /> Back to Dashboard
                 </button>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20 mb-6">
-                    <FiZap className="text-blue-500 animate-pulse" />
-                    <span className="text-blue-500 text-[10px] font-black uppercase tracking-widest">Digital Interface v1.0</span>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
+                    <div className="max-w-4xl">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center text-white shadow-xl">
+                                <FiCommand size={24} />
+                            </div>
+                            <span className="text-[var(--text-secondary)] text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Architectural Interface V1</span>
+                        </div>
+                        <h2 className="text-4xl md:text-7xl font-black text-[var(--text-primary)] tracking-tighter uppercase mb-6 italic">Developer <span className="text-[var(--primary-blue)]">API Portal</span></h2>
+                        <p className="text-[var(--text-secondary)] text-xl font-medium leading-relaxed opacity-60">
+                            Build high-performance data pipelines with our enterprise extraction infrastructure.
+                            Engineered for cryptographically secure, compliance-first intelligence harvesting.
+                        </p>
+                    </div>
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter mb-6">Developer API.</h1>
-                <p className="text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed">
-                    Scale your Intelligence Gathering. Integrate our proprietary extraction engine
-                    directly into your enterprise systems via secure API nodes.
-                </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 {/* Left Column: API Key & Stats */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-slate-900/50 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/5 shadow-2xl">
-                        <h2 className="text-xl font-black text-white italic tracking-tighter mb-6 flex items-center gap-3">
-                            <FiKey className="text-blue-500" /> API Access Key
+                <div className="lg:col-span-4 space-y-10">
+                    <div className="bg-white rounded-[3.5rem] p-12 border border-[var(--border-color)] shadow-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-[var(--primary-blue)]"></div>
+                        <h2 className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mb-10 opacity-40 flex items-center gap-4 italic">
+                            <FiKey className="text-[var(--primary-blue)]" /> Master Access Credentials
                         </h2>
 
                         {apiKey ? (
-                            <div className="space-y-4">
-                                <div className="relative group">
-                                    <div className="bg-black/40 border border-white/10 rounded-2xl p-4 font-mono text-xs text-blue-400 break-all pr-12">
+                            <div className="space-y-8">
+                                <div className="relative group/key">
+                                    <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 font-mono text-xs text-[var(--text-primary)] break-all pr-16 select-all shadow-inner font-bold tracking-tight">
                                         {apiKey}
                                     </div>
                                     <button
                                         onClick={() => copyToClipboard(apiKey, 'key')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-white hover:bg-black transition-all p-3 bg-white rounded-xl border border-[var(--border-color)] shadow-xl active:scale-95"
                                     >
-                                        <FiCopy />
+                                        {copied === 'key' ? <FiCheck className="text-emerald-500" /> : <FiCopy />}
                                     </button>
                                 </div>
-                                {copied === 'key' && <p className="text-[9px] font-black text-green-500 uppercase tracking-widest text-center">Node Key Copied to Buffer</p>}
 
-                                <div className="pt-6 mt-6 border-t border-white/5 space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Plan Level</span>
-                                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{user?.plan || 'Free Tier'}</span>
+                                <div className="pt-10 border-t border-[var(--border-color)] space-y-4">
+                                    <div className="flex justify-between items-center bg-[var(--bg-secondary)] p-5 rounded-2xl border border-transparent hover:border-[var(--border-color)] transition-all">
+                                        <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] opacity-40 italic">Active Tier</span>
+                                        <span className="text-[10px] font-black text-[var(--primary-blue)] uppercase tracking-[0.2em] bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">{user?.plan || 'Standard'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Usage Cycles</span>
-                                        <span className="text-[10px] font-black text-white uppercase tracking-widest">{usage?.total || 0} Total</span>
+                                    <div className="flex justify-between items-center bg-[var(--bg-secondary)] p-5 rounded-2xl border border-transparent hover:border-[var(--border-color)] transition-all">
+                                        <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] opacity-40 italic">Cycle Capacity</span>
+                                        <span className="text-[10px] font-black text-[var(--text-primary)] uppercase tracking-[0.2em]">{usage?.total || 0} / {user?.plan === 'pro' ? '5,000' : '500'}</span>
                                     </div>
                                     <button
                                         onClick={revokeKey}
                                         disabled={loading}
-                                        className="w-full py-3 bg-red-500/10 text-red-500 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-red-500/20 transition-all border border-red-500/10"
+                                        className="w-full py-5 text-red-500 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-red-50 transition-all border border-transparent hover:border-red-100 flex items-center justify-center gap-3 mt-4"
                                     >
-                                        Revoke Node Access
+                                        Revoke Access Handshake
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center py-4">
-                                <p className="text-slate-500 text-xs mb-6">No active API nodes detected. Initialize access to begin integration.</p>
+                            <div className="text-center py-12">
+                                <div className="w-24 h-24 rounded-[2rem] bg-[var(--bg-secondary)] flex items-center justify-center mx-auto mb-10 text-[var(--text-secondary)] opacity-20 shadow-inner">
+                                    <FiKey size={40} />
+                                </div>
+                                <p className="text-[var(--text-secondary)] text-sm font-medium mb-12 leading-relaxed opacity-60 uppercase tracking-widest px-8">System requires an authorized developer key to initiate interface handshake.</p>
                                 <button
                                     onClick={generateKey}
                                     disabled={loading || !token}
-                                    className="w-full py-4 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 disabled:opacity-50"
+                                    className="w-full py-6 bg-black text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] hover:bg-[var(--primary-blue)] transition-all shadow-2xl active:scale-95 disabled:opacity-50"
                                 >
-                                    {loading ? 'Initializing...' : 'Generate Access Key'}
+                                    {loading ? 'Initializing...' : 'Establish Connection'}
                                 </button>
-                                {!token && <p className="text-[8px] text-red-500 font-bold uppercase mt-4">Authentication Required</p>}
+                                {!token && <p className="text-[9px] text-red-500 font-black uppercase mt-6 tracking-[0.2em]">Authentication Required</p>}
                             </div>
                         )}
                     </div>
 
-                    <div className="bg-slate-900/50 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/5">
-                        <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] mb-4">Enterprise Quotas</h3>
-                        <div className="space-y-4 text-[10px] font-bold">
-                            <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                <p className="text-slate-500 mb-1 uppercase tracking-widest text-[9px]">Rate Limit</p>
-                                <p className="text-white text-base font-black italic tracking-tighter">{user?.plan === 'pro' ? '1,000' : '100'} <span className="text-xs font-normal not-italic text-slate-500">req / day</span></p>
+                    <div className="bg-white rounded-[3rem] p-12 border border-[var(--border-color)] shadow-xl relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500 opacity-20"></div>
+                        <h3 className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] mb-10 flex items-center gap-4 italic opacity-40">
+                            <FiActivity className="text-emerald-500" /> Infrastructure Quotas
+                        </h3>
+                        <div className="space-y-6">
+                            <div className="p-8 rounded-[2rem] bg-[var(--bg-secondary)] border border-transparent hover:border-[var(--border-color)] transition-all hover:bg-white hover:shadow-2xl group/limit">
+                                <p className="text-[var(--text-secondary)] mb-4 uppercase tracking-[0.4em] text-[8px] font-black opacity-40 italic">Requests per Cycle</p>
+                                <p className="text-[var(--text-primary)] text-4xl font-black tracking-tighter italic tabular-nums">{user?.plan === 'pro' ? '5,000' : '500'}<span className="text-[10px] font-black text-[var(--text-secondary)] opacity-20 ml-3 uppercase tracking-widest">Total</span></p>
                             </div>
-                            <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                <p className="text-slate-500 mb-1 uppercase tracking-widest text-[9px]">Concurrency</p>
-                                <p className="text-white text-base font-black italic tracking-tighter">{user?.plan === 'pro' ? '10' : '1'} <span className="text-xs font-normal not-italic text-slate-500">Async Workers</span></p>
+                            <div className="p-8 rounded-[2rem] bg-[var(--bg-secondary)] border border-transparent hover:border-[var(--border-color)] transition-all hover:bg-white hover:shadow-2xl group/limit">
+                                <p className="text-[var(--text-secondary)] mb-4 uppercase tracking-[0.4em] text-[8px] font-black opacity-40 italic">Parallel Channels</p>
+                                <p className="text-[var(--text-primary)] text-4xl font-black tracking-tighter italic tabular-nums">{user?.plan === 'pro' ? '25' : '5'}<span className="text-[10px] font-black text-[var(--text-secondary)] opacity-20 ml-3 uppercase tracking-widest">Nodes</span></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Right Column: Documentation & Code */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Endpoints */}
-                    <div className="bg-slate-900/50 backdrop-blur-3xl rounded-[3rem] p-10 border border-white/5">
-                        <h2 className="text-2xl font-black text-white italic tracking-tighter mb-8 flex items-center gap-3">
-                            <FiTerminal className="text-purple-500" /> Digital Endpoints
+                <div className="lg:col-span-8 space-y-12">
+                    <div className="bg-white rounded-[4rem] p-16 border border-[var(--border-color)] shadow-2xl">
+                        <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tighter mb-16 flex items-center gap-5 uppercase italic">
+                            <FiTerminal className="text-[var(--primary-blue)]" /> Protocol Endpoints
                         </h2>
 
-                        <div className="space-y-8">
+                        <div className="space-y-16">
                             {/* Extract v1 */}
                             <div className="group">
-                                <div className="flex items-center gap-4 mb-3">
-                                    <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-lg text-[9px] font-black tracking-widest uppercase">GET</span>
-                                    <code className="text-white font-mono text-sm">/api/v1/extract</code>
+                                <div className="flex flex-wrap items-center gap-6 mb-8">
+                                    <span className="px-5 py-2 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl text-[9px] font-black tracking-[0.3em] uppercase shadow-sm">METHOD_GET</span>
+                                    <code className="text-[var(--text-primary)] font-mono text-xl font-black tracking-tight italic">/api/v1/extract</code>
+                                    <span className="ml-auto text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] opacity-30 italic">Direct Deep Pulse</span>
                                 </div>
-                                <p className="text-slate-400 text-sm mb-4">Initialize deep analysis on a single target URL. Returns phone, email, and company intelligence.</p>
-                                <div className="bg-black/30 rounded-2xl p-5 border border-white/5">
-                                    <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-3">Query Parameters</h4>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-xs font-mono">
-                                            <span className="text-blue-400">url</span>
-                                            <span className="text-slate-500 italic">string (required)</span>
+                                <p className="text-[var(--text-secondary)] text-lg font-medium mb-10 leading-relaxed opacity-60">
+                                    Primary node for single-target deep intelligence. Analyzes the target DOM structure
+                                    and resolves all identifiable corporate, contact, and social data points in a single reactive stream.
+                                </p>
+                                <div className="bg-[var(--bg-secondary)] rounded-[2.5rem] p-10 border border-[var(--border-color)]/50 shadow-inner">
+                                    <h4 className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mb-8 opacity-40 italic">Authorized Parameters</h4>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center p-6 bg-white rounded-2xl border border-[var(--border-color)]/30 hover:border-[var(--primary-blue)]/30 transition-all shadow-sm">
+                                            <span className="text-[var(--primary-blue)] font-mono font-black text-sm uppercase px-2 tracking-tight">url</span>
+                                            <span className="text-[var(--text-secondary)] italic text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Resource URI (REQUIRED)</span>
                                         </div>
-                                        <div className="flex justify-between text-xs font-mono">
-                                            <span className="text-blue-400">fields</span>
-                                            <span className="text-slate-500 italic">string (options: phones,emails,social)</span>
+                                        <div className="flex justify-between items-center p-6 bg-white rounded-2xl border border-[var(--border-color)]/30 hover:border-[var(--primary-blue)]/30 transition-all shadow-sm">
+                                            <span className="text-[var(--primary-blue)] font-mono font-black text-sm uppercase px-2 tracking-tight">mode</span>
+                                            <span className="text-[var(--text-secondary)] italic text-[10px] font-black uppercase tracking-[0.2em] opacity-40">STANDARD | STEALTH_BYPASS</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="h-px bg-white/5"></div>
+                            <div className="h-px bg-[var(--border-color)] opacity-30"></div>
 
-                            {/* Bulk v1 */}
-                            <div>
-                                <div className="flex items-center gap-4 mb-3">
-                                    <span className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg text-[9px] font-black tracking-widest uppercase">POST</span>
-                                    <code className="text-white font-mono text-sm">/api/v1/bulk</code>
+                            {/* Audit v1 */}
+                            <div className="group">
+                                <div className="flex flex-wrap items-center gap-6 mb-8">
+                                    <span className="px-5 py-2 bg-blue-50 text-[var(--primary-blue)] border border-blue-100 rounded-xl text-[9px] font-black tracking-[0.3em] uppercase shadow-sm">METHOD_GET</span>
+                                    <code className="text-[var(--text-primary)] font-mono text-xl font-black tracking-tight italic">/api/v1/audit</code>
+                                    <span className="ml-auto text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.3em] opacity-30 italic">Infra Assurance</span>
                                 </div>
-                                <p className="text-slate-400 text-sm mb-4">Matrix Batch processing for up to 10 URLs in a single payload. Ideal for high-scale harvesting.</p>
-                                <div className="bg-black/30 rounded-2xl p-5 border border-white/5">
-                                    <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-3">JSON Body</h4>
-                                    <code className="text-purple-400 text-[11px] font-mono">{`{ "urls": ["https://site-a.com", "https://site-b.com"] }`}</code>
+                                <p className="text-[var(--text-secondary)] text-lg font-medium mb-10 leading-relaxed opacity-60">
+                                    Performs comprehensive infrastructure postural analysis. Evaluates secure routing metrics,
+                                    SSL/TLS encryption layers, and fortification header compliance.
+                                </p>
+                                <div className="bg-[var(--bg-secondary)] rounded-[2.5rem] p-10 border border-[var(--border-color)]/50 shadow-inner">
+                                    <h4 className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] mb-8 opacity-40 italic">Audit Parameters</h4>
+                                    <div className="flex justify-between items-center p-6 bg-white rounded-2xl border border-[var(--border-color)]/30 hover:border-[var(--primary-blue)]/30 transition-all shadow-sm">
+                                        <span className="text-[var(--primary-blue)] font-mono font-black text-sm uppercase px-2 tracking-tight">url</span>
+                                        <span className="text-[var(--text-secondary)] italic text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Target FQDN (REQUIRED)</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Implementation Examples */}
-                    <div className="bg-slate-900/50 backdrop-blur-3xl rounded-[3rem] border border-white/5 overflow-hidden">
-                        <div className="flex border-b border-white/5 p-2 bg-white/5">
+                    <div className="bg-white rounded-[4rem] border border-[var(--border-color)] overflow-hidden shadow-2xl">
+                        <div className="flex border-b border-[var(--border-color)] p-4 bg-[var(--bg-secondary)]/50 gap-3">
                             {Object.keys(CODE_EXAMPLES).map(lang => (
                                 <button
                                     key={lang}
                                     onClick={() => setActiveLang(lang)}
-                                    className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl ${activeLang === lang
-                                        ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
-                                        : 'text-slate-500 hover:text-white'
+                                    className={`px-10 py-5 text-[9px] font-black uppercase tracking-[0.3em] transition-all rounded-[1.5rem] border ${activeLang === lang
+                                        ? 'bg-black text-white shadow-xl border-black active:scale-95'
+                                        : 'bg-white text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[var(--primary-blue)] opacity-60 hover:opacity-100'
                                         }`}
                                 >
                                     {lang}
                                 </button>
                             ))}
                         </div>
-                        <div className="relative group">
-                            <pre className="p-8 text-blue-400 text-xs font-mono overflow-x-auto leading-relaxed scrollbar-hide">
+                        <div className="relative group p-2 bg-white">
+                            <pre className="p-12 text-[var(--text-primary)] text-sm font-mono overflow-x-auto leading-loose scrollbar-hide bg-white rounded-[3.5rem] font-bold tracking-tight">
                                 {CODE_EXAMPLES[activeLang]}
                             </pre>
                             <button
                                 onClick={() => copyToClipboard(CODE_EXAMPLES[activeLang], 'code')}
-                                className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all"
+                                className="absolute top-10 right-10 w-16 h-16 rounded-[2rem] bg-white border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] hover:bg-black hover:text-white hover:shadow-2xl transition-all duration-500 shadow-xl"
                             >
-                                <FiCopy />
+                                {copied === 'code' ? <FiCheck className="text-emerald-500 text-xl" /> : <FiCopy className="text-xl" />}
                             </button>
-                            {copied === 'code' && (
-                                <div className="absolute top-12 right-12 bg-green-500 text-white text-[8px] font-black px-2 py-1 rounded-sm uppercase tracking-widest">Copied</div>
-                            )}
                         </div>
                     </div>
 
                     {/* Support Call */}
-                    <div className="p-10 bg-gradient-to-br from-blue-600 to-purple-700 rounded-[3rem] flex flex-col items-center text-center">
-                        <FiDatabase className="text-4xl text-white/50 mb-6" />
-                        <h3 className="text-3xl font-black text-white italic tracking-tighter mb-4">Enterprise Scale Needed?</h3>
-                        <p className="text-white/70 text-sm max-w-sm mb-8 font-medium">Connect with our data architecture team for custom quotas, dedicated proxies, and priority bandwidth.</p>
-                        <button className="px-10 py-4 bg-white text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:scale-105 transition-all shadow-2xl">
-                            Upgrade to Enterprise Pro
+                    <div className="p-16 bg-black text-white rounded-[4rem] flex flex-col lg:flex-row items-center justify-between gap-12 text-center lg:text-left relative overflow-hidden group border-none">
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                        <div className="relative z-10 flex-1">
+                            <div className="flex items-center gap-5 mb-6 justify-center lg:justify-start">
+                                <div className="w-14 h-14 rounded-2xl bg-[var(--primary-blue)] flex items-center justify-center text-white shadow-[0_0_30px_rgba(37,99,235,0.3)]">
+                                    <FiDatabase size={28} />
+                                </div>
+                                <h3 className="text-3xl font-black uppercase tracking-tight italic">Enterprise Scaling</h3>
+                            </div>
+                            <p className="text-white/40 text-lg font-medium leading-relaxed max-w-xl">Require custom throughput, dedicated IP pooling, or custom schemas? Configure your private cluster with dedicated resources.</p>
+                        </div>
+                        <button className="relative z-10 px-12 py-7 bg-[var(--primary-blue)] text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] hover:bg-white hover:text-black transition-all shadow-2xl shadow-blue-600/20 active:scale-95 whitespace-nowrap">
+                            Contact Infrastructure
                         </button>
                     </div>
                 </div>

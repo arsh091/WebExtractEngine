@@ -1,87 +1,78 @@
-import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { FiGlobe, FiInfo } from 'react-icons/fi';
+import { Globe, Building2, MapPin, Search, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const CompanyHeader = ({ companyInfo, url }) => {
-    const cardRef = useRef(null);
-
-    useEffect(() => {
-        gsap.fromTo(cardRef.current,
-            { opacity: 0, y: -20 },
-            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
-        );
-    }, [companyInfo]);
-
-    if (!companyInfo?.name && !companyInfo?.title) return null;
+const CompanyHeader = ({ data }) => {
+    const info = data?.companyInfo;
+    if (!info) return null;
 
     return (
-        <div ref={cardRef} className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 
-      backdrop-blur-lg rounded-2xl p-6 border border-white/10 mb-6 font-sans">
-
-            <div className="flex items-center gap-4">
-                {/* Logo / Favicon */}
-                <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/5">
-                    {companyInfo.favicon ? (
-                        <img
-                            src={companyInfo.favicon}
-                            alt="favicon"
-                            className="w-10 h-10 object-contain"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                        />
-                    ) : (
-                        <FiGlobe className="text-3xl text-blue-400" />
-                    )}
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="pro-card p-8 md:p-12 relative overflow-hidden bg-white border border-[var(--border-color)] group"
+        >
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-10 relative z-10">
+                {/* Logo / Initial */}
+                <div className="relative shrink-0">
+                    <div className="w-28 h-28 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] flex items-center justify-center p-6 shadow-sm group-hover:scale-105 transition-all duration-500">
+                        {info.logo ? (
+                            <img src={info.logo} alt={info.name} className="w-full h-full object-contain" />
+                        ) : (
+                            <Building2 className="w-10 h-10 text-[var(--primary-blue)] opacity-70" />
+                        )}
+                    </div>
                 </div>
 
-                {/* Company Details */}
-                <div className="flex-1 min-w-0">
-                    {companyInfo.name && (
-                        <h2 className="text-2xl font-bold text-white truncate leading-tight tracking-tight italic">
-                            {companyInfo.name}.
-                        </h2>
-                    )}
-                    {companyInfo.title && companyInfo.title !== companyInfo.name && (
-                        <p className="text-gray-400 text-sm truncate mt-1">
-                            {companyInfo.title}
-                        </p>
-                    )}
-                    {companyInfo.description && (
-                        <p className="text-gray-300 text-sm mt-2 line-clamp-2 leading-relaxed opacity-80">
-                            {companyInfo.description}
-                        </p>
-                    )}
-                    <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-400 text-xs mt-3 px-3 py-1 bg-white/5 rounded-full hover:bg-white/10 transition-all inline-flex items-center gap-1.5 border border-white/5"
-                    >
-                        <FiGlobe className="text-[10px]" /> {getSafeHostname(url)}
-                    </a>
+                {/* Content */}
+                <div className="flex-1 text-center md:text-left">
+                    <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight leading-none">
+                            {info.name || 'Company Profile'}
+                        </h1>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 border border-green-100 mx-auto md:mx-0">
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <span className="text-xs font-semibold text-green-700 leading-none">Verified Match</span>
+                        </div>
+                    </div>
+
+                    <p className="text-[var(--text-secondary)] text-base font-medium leading-relaxed max-w-3xl mb-8">
+                        {info.description || 'Enterprise data profile mapped. Contact information and digital footprint extracted.'}
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {info.website && (
+                            <a
+                                href={info.website}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-secondary)] border border-transparent hover:border-[var(--border-color)] hover:bg-white transition-all group/link shadow-sm"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 group-hover/link:bg-blue-100 transition-all">
+                                    <Globe className="w-5 h-5 text-[var(--primary-blue)]" />
+                                </div>
+                                <div className="text-left overflow-hidden">
+                                    <p className="text-xs font-semibold text-[var(--text-secondary)] mb-1">Domain</p>
+                                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{info.website.replace(/^https?:\/\//, '')}</p>
+                                </div>
+                            </a>
+                        )}
+
+                        {info.location && (
+                            <div className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-secondary)] border border-transparent shadow-sm">
+                                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100">
+                                    <MapPin className="w-5 h-5 text-[var(--primary-blue)]" />
+                                </div>
+                                <div className="text-left overflow-hidden">
+                                    <p className="text-xs font-semibold text-[var(--text-secondary)] mb-1">Location</p>
+                                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{info.location}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {/* Theme Color Indicator */}
-            {companyInfo.themeColor && (
-                <div className="mt-4 flex items-center gap-2">
-                    <div
-                        className="w-3 h-3 rounded-full border border-white/20 animate-pulse"
-                        style={{ backgroundColor: companyInfo.themeColor }}
-                    />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Brand Color: {companyInfo.themeColor}</span>
-                </div>
-            )}
-        </div>
+        </motion.div>
     );
-};
-
-const getSafeHostname = (url) => {
-    try {
-        if (!url) return 'Unknown Host';
-        return new URL(url).hostname;
-    } catch (e) {
-        return url || 'Unknown Host';
-    }
 };
 
 export default CompanyHeader;

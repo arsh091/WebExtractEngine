@@ -1,28 +1,50 @@
-import { useEffect, useRef, useContext } from 'react';
+import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { FiArrowDown, FiShield, FiZap, FiDatabase } from 'react-icons/fi';
-import { ThemeContext } from '../context/ThemeContext';
+import { BadgeCheck, ArrowRight, Play, Search, Zap, Shield, Database, LayoutGrid, Cpu, Globe } from 'lucide-react';
 
 const Hero = () => {
     const heroRef = useRef(null);
-    const contentRef = useRef(null);
-    const { theme } = useContext(ThemeContext);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            gsap.fromTo(contentRef.current.children,
-                { opacity: 0, y: 30 },
-                { opacity: 1, y: 0, duration: 1, stagger: 0.2, ease: 'power3.out', delay: 0.5 }
-            );
+            gsap.from('.hero-badge', {
+                y: 20,
+                opacity: 0,
+                duration: 0.8,
+                ease: 'power4.out'
+            });
 
-            // Floating animation for decorative elements
-            gsap.to('.hero-blob', {
-                y: '+=20',
-                duration: 3,
-                repeat: -1,
-                yoyo: true,
-                ease: 'sine.inOut',
-                stagger: 0.5
+            gsap.from('.hero-title', {
+                y: 40,
+                opacity: 0,
+                duration: 1.2,
+                delay: 0.1,
+                ease: 'power4.out'
+            });
+
+            gsap.from('.hero-subtitle', {
+                y: 30,
+                opacity: 0,
+                duration: 1,
+                delay: 0.2,
+                ease: 'power4.out',
+                clearProps: "all"
+            });
+
+            gsap.from('.hero-actions', {
+                y: 20,
+                opacity: 0,
+                duration: 1,
+                delay: 0.3,
+                ease: 'power4.out'
+            });
+
+            gsap.from('.hero-stats', {
+                y: 20,
+                opacity: 0,
+                duration: 1,
+                delay: 0.5,
+                ease: 'power4.out'
             });
         }, heroRef);
 
@@ -30,55 +52,66 @@ const Hero = () => {
     }, []);
 
     return (
-        <div ref={heroRef} className="relative min-h-[85vh] flex flex-col items-center justify-center text-center px-4 overflow-hidden pt-20">
-            {/* Background elements */}
-            <div className="absolute inset-0 -z-10 bg-white dark:bg-appDark transition-colors duration-500">
-                <div className="hero-blob absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-500/10 dark:bg-primary-500/20 blur-[120px]"></div>
-                <div className="hero-blob absolute bottom-[0%] right-[-5%] w-[40%] h-[40%] rounded-full bg-accent/5 dark:bg-accent/10 blur-[100px]"></div>
-
-                {/* Grid Overlay */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 pointer-events-none"></div>
-                <div className="absolute inset-0 dark:bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0)_0%,rgba(15,23,42,1)_100%)]"></div>
+        <section ref={heroRef} className="relative pt-48 pb-32 px-6 flex flex-col items-center text-center overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 flex justify-center overflow-hidden pointer-events-none">
+                <div className="w-[1200px] h-[800px] bg-blue-50/50 rounded-full blur-[150px] -translate-y-1/2 opacity-60"></div>
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--primary-blue)]/5 rounded-full blur-[100px] animate-pulse"></div>
             </div>
 
-            <div ref={contentRef} className="max-w-4xl mx-auto space-y-8 z-10">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 dark:bg-primary-500/20 rounded-full border border-primary-500/20 mb-4 scale-animation">
-                    <FiZap className="text-primary-500" />
-                    <span className="text-primary-600 dark:text-primary-400 text-sm font-bold tracking-wider">NEXT-GEN WEB SCRAPER</span>
+            <div className="max-w-6xl mx-auto relative z-10">
+                {/* Badge */}
+                <div className="hero-badge inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 mb-8 cursor-default group transition-all duration-300 hover:bg-blue-100">
+                    <Database className="w-4 h-4 text-[var(--primary-blue)]" />
+                    <span className="text-xs font-semibold text-[var(--primary-blue)]">
+                        Enterprise Data Extraction Platform
+                    </span>
                 </div>
 
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-gray-900 dark:text-white leading-[1.1]">
-                    Extract Data <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 via-blue-600 to-cyan-500 drop-shadow-2xl">
-                        Instantly.
-                    </span>
+                {/* Title */}
+                <h1 className="hero-title text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-[var(--text-primary)] mb-6 leading-tight">
+                    Reliable <span className="text-[var(--primary-blue)]">Web Data</span><br />
+                    At Your Fingertips
                 </h1>
 
-                <p className="text-lg md:text-xl text-gray-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-                    Analyze any website and extract phone numbers, emails, and physical addresses
-                    using our advanced AI-pattern recognition engine.
+                {/* Subtitle */}
+                <p className="hero-subtitle text-lg md:text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed mb-12">
+                    An industry-standard web extraction platform for gathering accurate contact information,
+                    social profiles, and organizational data. Fast, reliable, and professional.
                 </p>
 
-                <div className="flex flex-wrap justify-center gap-8 pt-8 opacity-60">
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400 text-sm font-semibold">
-                        <FiShield className="text-primary-500" />
-                        SECURE
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400 text-sm font-semibold">
-                        <FiZap className="text-primary-500" />
-                        LIGHTNING FAST
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400 text-sm font-semibold">
-                        <FiDatabase className="text-primary-500" />
-                        HIGH ACCURACY
-                    </div>
-                </div>
-
-                <div className="pt-12 animate-bounce-slow">
-                    <FiArrowDown className="text-primary-500 text-3xl mx-auto opacity-50" />
+                {/* Actions */}
+                <div className="hero-actions flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button className="pro-button pro-button-primary px-8 py-3.5 text-base shadow-sm hover:shadow-md">
+                        Start Extracting <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <button className="pro-button pro-button-secondary px-8 py-3.5 text-base gap-3">
+                        <Play className="w-4 h-4" />
+                        Watch Demo
+                    </button>
                 </div>
             </div>
-        </div>
+
+            {/* Platform Stats Row */}
+            <div className="hero-stats mt-24 grid grid-cols-2 lg:grid-cols-4 gap-8 py-10 border-t border-[var(--border-color)] w-full max-w-5xl mx-auto">
+                {[
+                    { label: '99.9% Accuracy', icon: Shield, desc: 'Verified Results' },
+                    { label: 'Cloud-Native', icon: Database, desc: 'Scalable Processing' },
+                    { label: 'Real-time Extraction', icon: Zap, desc: 'Lightning Fast' },
+                    { label: 'Deep Search', icon: Search, desc: 'Comprehensive Coverage' }
+                ].map((stat) => (
+                    <div key={stat.label} className="flex flex-col items-center gap-3 group cursor-default">
+                        <div className="p-3 bg-blue-50 text-[var(--primary-blue)] rounded-xl transition-all duration-300 group-hover:bg-[var(--primary-blue)] group-hover:text-white">
+                            <stat.icon size={20} />
+                        </div>
+                        <div className="text-center">
+                            <span className="text-sm font-bold text-[var(--text-primary)] block">{stat.label}</span>
+                            <span className="text-xs text-[var(--text-secondary)]">{stat.desc}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>
     );
 };
 

@@ -4,6 +4,7 @@ import { scrapeWebsite } from '../services/scraper.js';
 import { extractPhones, extractEmails, extractAddresses } from '../services/extractor.js';
 import { extractCompanyInfo } from '../services/companyExtractor.js';
 import { extractSocialMedia } from '../services/socialExtractor.js';
+import { scanWebsite } from '../services/securityScanner.js';
 import { validateUrl } from '../utils/validators.js';
 
 const router = express.Router();
@@ -100,6 +101,27 @@ router.get('/usage', (req, res) => {
             limit: user.plan === 'pro' ? '1000/day' : '100/day'
         }
     });
+});
+
+/**
+ * @api {get} /v1/audit Run security audit on URL
+ */
+router.get('/audit', async (req, res) => {
+    try {
+        const { url } = req.query;
+
+        if (!url || !validateUrl(url)) {
+            return res.status(400).json({ success: false, error: 'Valid URL is required' });
+        }
+
+        console.log(`[Public API] Security Audit: ${url}`);
+        const audit = await scanWebsite(url);
+
+        res.json({ success: true, data: audit });
+    } catch (error) {
+        console.error(`[Public API] Audit Error:`, error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 export default router;

@@ -24,6 +24,8 @@ module.exports = {
         'fade-in': 'fadeIn 0.8s ease-out forwards',
         'slide-up': 'slideUp 1s ease-out forwards',
         'bounce-slow': 'bounce 3s infinite',
+        'shimmer': 'shimmer 2s linear infinite',
+        'spin-slow': 'spin 8s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -33,6 +35,10 @@ module.exports = {
         slideUp: {
           '0%': { transform: 'translateY(20px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
         }
       }
     },

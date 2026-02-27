@@ -12,6 +12,7 @@ import authRouter from './routes/auth.js';
 import historyRouter from './routes/history.js';
 import apiKeysRouter from './routes/apikeys.js';
 import publicApiRouter from './routes/publicApi.js';
+import securityRouter from './routes/security.js';
 
 dotenv.config();
 const app = express();
@@ -70,6 +71,7 @@ app.use('/api/bulk', bulkRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/history', historyRouter);
 app.use('/api/apikeys', apiKeysRouter);
+app.use('/api/security', securityRouter);
 app.use('/api/v1', publicApiRouter);
 
 // Health check
@@ -87,7 +89,7 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-const HOST = process.env.PORT ? '0.0.0.0' : 'localhost';
+const HOST = '0.0.0.0';
 
 console.log(`[Server] Environment: ${process.env.NODE_ENV}`);
 
