@@ -7,8 +7,10 @@ import ExtractorForm from '../components/ExtractorForm';
 import ProgressBar from '../components/ProgressBar';
 import ResultsDisplay from '../components/ResultsDisplay';
 import BulkProcessor from '../components/BulkProcessor';
+import { useAuth } from '../context/AuthContext';
 
-const Home = ({ onNotification, urlToAutoExtract, clearAutoExtract }) => {
+const Home = ({ onNotification, urlToAutoExtract, clearAutoExtract, onOpenAuth }) => {
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('single');
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -133,6 +135,8 @@ const Home = ({ onNotification, urlToAutoExtract, clearAutoExtract }) => {
                                         onExtract={handleExtract}
                                         onReset={handleReset}
                                         loading={loading}
+                                        isAuthenticated={!!user}
+                                        onOpenAuth={onOpenAuth}
                                     />
                                 </div>
 
@@ -142,8 +146,8 @@ const Home = ({ onNotification, urlToAutoExtract, clearAutoExtract }) => {
                                     </div>
                                 )}
 
-                                <div ref={resultsRef} className="scroll-mt-48">
-                                    <ResultsDisplay data={data} onNotification={onNotification} />
+                                <div ref={resultsRef} className="scroll-mt-48 relative">
+                                    <ResultsDisplay data={data} onNotification={onNotification} isAuthenticated={!!user} onOpenAuth={onOpenAuth} />
                                 </div>
                             </motion.div>
                         ) : (

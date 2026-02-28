@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { Search, RotateCcw, ShieldCheck, Globe } from 'lucide-react';
+import { Search, RotateCcw, ShieldCheck, Globe, Lock } from 'lucide-react';
 
-const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
+const ExtractorForm = ({ onExtract, onReset, loading, inputRef, isAuthenticated, onOpenAuth }) => {
     const [url, setUrl] = useState('');
     const [isValidUrl, setIsValidUrl] = useState(true);
     const containerRef = useRef(null);
@@ -39,6 +39,10 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
         }
 
         setIsValidUrl(true);
+        if (!isAuthenticated) {
+            onOpenAuth();
+            return;
+        }
         onExtract(url);
     };
 
@@ -107,8 +111,8 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center gap-2">
-                                    <Search className="w-5 h-5" />
-                                    <span className="font-semibold">Extract Data</span>
+                                    {!isAuthenticated ? <Lock className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+                                    <span className="font-semibold">{!isAuthenticated ? 'Sign In to Extract' : 'Extract Data'}</span>
                                 </div>
                             )}
                         </button>

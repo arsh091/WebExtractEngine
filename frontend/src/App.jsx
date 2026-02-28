@@ -64,15 +64,16 @@ function App() {
                             <HistoryPage
                                 onBack={() => setView('home')}
                                 onReExtract={handleReExtract}
+                                onOpenAuth={() => setIsAuthOpen(true)}
                             />
                         ) : view === 'api' ? (
                             <ApiDocsPage onBack={() => setView('home')} />
                         ) : view === 'security' ? (
-                            <SecurityScannerPage onBack={() => setView('home')} />
+                            <SecurityScannerPage onBack={() => setView('home')} onOpenAuth={() => setIsAuthOpen(true)} />
                         ) : view === 'ip' ? (
-                            <SiteIntelligence onBack={() => setView('home')} />
+                            <SiteIntelligence onBack={() => setView('home')} onOpenAuth={() => setIsAuthOpen(true)} />
                         ) : view === 'advanced-scan' ? (
-                            <AdvancedScanner onBack={() => setView('home')} />
+                            <AdvancedScanner onBack={() => setView('home')} onOpenAuth={() => setIsAuthOpen(true)} />
                         ) : (
                             <Routes>
                                 <Route
@@ -83,6 +84,7 @@ function App() {
                                             onOpenHistory={() => setView('history')}
                                             urlToAutoExtract={pendingUrl}
                                             clearAutoExtract={() => setPendingUrl(null)}
+                                            onOpenAuth={() => setIsAuthOpen(true)}
                                         />
                                     }
                                 />

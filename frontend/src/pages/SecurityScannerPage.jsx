@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiShield, FiSearch, FiCheckCircle, FiAlertTriangle, FiArrowLeft, FiLock, FiAlertCircle, FiActivity, FiGlobe, FiCommand, FiInfo, FiServer, FiExternalLink } from 'react-icons/fi';
+import { FiShield, FiSearch, FiCheckCircle, FiAlertTriangle, FiArrowLeft, FiLock, FiAlertCircle, FiActivity, FiGlobe, FiCommand, FiInfo, FiServer, FiExternalLink, FiArrowRight } from 'react-icons/fi';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const SecurityScannerPage = ({ onBack }) => {
+const SecurityScannerPage = ({ onBack, onOpenAuth }) => {
+    const { user } = useAuth();
+    const isAuthenticated = !!user;
     const [url, setUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [scanResult, setScanResult] = useState(null);
@@ -122,9 +125,9 @@ const SecurityScannerPage = ({ onBack }) => {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-center py-32 bg-white rounded-[3rem] border border-[var(--border-color)] shadow-sm"
+                        className="text-center py-32 bg-white dark:bg-[var(--card-bg)] rounded-[3rem] border border-[var(--border-color)] shadow-sm"
                     >
-                        <div className="w-16 h-16 rounded-3xl bg-blue-50 flex items-center justify-center mx-auto mb-6 text-[var(--primary-blue)] shadow-sm">
+                        <div className="w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center mx-auto mb-6 text-[var(--primary-blue)] shadow-sm">
                             <FiLock size={24} />
                         </div>
                         <h3 className="text-[var(--text-primary)] text-2xl font-black mb-2 uppercase tracking-tight">System Ready</h3>
@@ -135,117 +138,149 @@ const SecurityScannerPage = ({ onBack }) => {
                 )}
 
                 {scanResult && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="grid grid-cols-1 lg:grid-cols-12 gap-10"
-                    >
-                        {/* Summary Column */}
-                        <div className="lg:col-span-4 space-y-8">
-                            <div className="pro-card p-12 text-center bg-white border border-[var(--border-color)]">
-                                <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-10 opacity-30">Security Grade</p>
-                                <div className={`text-9xl font-black tracking-tighter mb-6 leading-none ${getGradeColor(scanResult.grade)}`}>
-                                    {scanResult.grade}
-                                </div>
-                                <div className="text-[var(--text-primary)] text-5xl font-black mb-1">
-                                    {scanResult.securityScore}<span className="text-xl text-[var(--text-secondary)] opacity-30 font-bold">/100</span>
-                                </div>
-                                <p className="text-[10px] font-black text-[var(--text-secondary)] opacity-30 uppercase tracking-widest">Global Safety Score</p>
+                    <div className="relative">
+                        {!isAuthenticated && (
+                            <div className="absolute inset-x-0 top-0 z-20 flex items-start justify-center pt-32 pointer-events-none group-hover:pointer-events-auto">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-10 bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)] rounded-[3rem] shadow-2xl text-center max-w-lg mx-auto pointer-events-auto sticky top-48"
+                                >
+                                    <div className="w-20 h-20 bg-blue-50 dark:bg-blue-500/10 text-[var(--primary-blue)] rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
+                                        <FiLock size={32} />
+                                    </div>
+                                    <h3 className="text-3xl font-black text-[var(--text-primary)] mb-6 uppercase tracking-tighter">Security <span className="text-[var(--primary-blue)]">Restricted</span></h3>
+                                    <p className="text-[var(--text-secondary)] text-lg font-bold leading-relaxed opacity-60 mb-10">
+                                        Full vulnerability reports and remediation guides are reserved for authorized members. Create an account to access the full analysis.
+                                    </p>
+                                    <button
+                                        onClick={onOpenAuth}
+                                        className="w-full pro-button pro-button-primary !py-5 flex items-center justify-center gap-4 text-sm font-black uppercase tracking-widest shadow-xl"
+                                    >
+                                        Sign In to Access Report
+                                        <FiArrowRight size={18} />
+                                    </button>
+                                    <p className="mt-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-30">
+                                        Data Protection Protocol ACTIVE
+                                    </p>
+                                </motion.div>
                             </div>
+                        )}
 
-                            <div className="pro-card p-10 bg-white border border-[var(--border-color)]">
-                                <h3 className="text-sm font-black text-[var(--text-primary)] mb-8 flex items-center gap-3 uppercase tracking-tight">
-                                    <FiCheckCircle className="text-emerald-500" /> SSL Certificate
-                                </h3>
-                                <div className="space-y-3">
-                                    {[
-                                        { label: 'Status', val: scanResult.ssl.valid ? 'Active' : 'Expired', color: scanResult.ssl.valid ? 'text-emerald-600' : 'text-red-500' },
-                                        { label: 'Expires', val: new Date(scanResult.ssl.validTo).toLocaleDateString(), color: 'text-[var(--text-primary)]' },
-                                        { label: 'Remaining', val: `${scanResult.ssl.daysRemaining} Days`, color: 'text-[var(--primary-blue)]' },
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex justify-between items-center p-5 bg-[var(--bg-secondary)] rounded-2xl border border-transparent hover:border-[var(--border-color)] transition-all">
-                                            <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-40">{item.label}</span>
-                                            <span className={`text-[11px] font-black ${item.color}`}>{item.val}</span>
-                                        </div>
-                                    ))}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className={`grid grid-cols-1 lg:grid-cols-12 gap-10 ${!isAuthenticated ? 'blur-[10px] select-none pointer-events-none opacity-40 transition-all duration-700' : 'transition-all duration-700'}`}
+                        >
+                            {/* Summary Column */}
+                            <div className="lg:col-span-4 space-y-8">
+                                <div className="pro-card p-12 text-center bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)]">
+                                    <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-10 opacity-30">Security Grade</p>
+                                    <div className={`text-9xl font-black tracking-tighter mb-6 leading-none ${getGradeColor(scanResult.grade)}`}>
+                                        {isAuthenticated ? scanResult.grade : 'X'}
+                                    </div>
+                                    <div className="text-[var(--text-primary)] text-5xl font-black mb-1">
+                                        {isAuthenticated ? scanResult.securityScore : '--'}<span className="text-xl text-[var(--text-secondary)] opacity-30 font-bold">/100</span>
+                                    </div>
+                                    <p className="text-[10px] font-black text-[var(--text-secondary)] opacity-30 uppercase tracking-widest">Global Safety Score</p>
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Details Column */}
-                        <div className="lg:col-span-8 space-y-10">
-                            <div className="pro-card p-10 md:p-16 bg-white border border-[var(--border-color)]">
-                                <h3 className="text-2xl font-black text-[var(--text-primary)] mb-12 flex items-center gap-4 uppercase tracking-tight leading-none">
-                                    <FiAlertTriangle className="text-amber-500" /> Critical Findings
-                                </h3>
-                                <div className="space-y-8">
-                                    {scanResult.vulnerabilities.map((vuln, i) => {
-                                        const style = getSeverityStyles(vuln.severity);
-                                        return (
-                                            <motion.div
-                                                initial={{ opacity: 0, x: 20 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                key={i}
-                                                className="p-8 bg-[var(--bg-secondary)] rounded-[2rem] border border-transparent hover:border-[var(--border-color)] hover:bg-white hover:shadow-2xl transition-all duration-300"
-                                            >
-                                                <div className="flex items-start justify-between gap-6 mb-8">
-                                                    <div>
-                                                        <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black mb-4 inline-block uppercase tracking-widest ${style.bg} ${style.text} border ${style.border}`}>
-                                                            {vuln.severity}
-                                                        </span>
-                                                        <h4 className="text-[var(--text-primary)] font-black text-2xl tracking-tight uppercase leading-none">{vuln.type}</h4>
-                                                    </div>
-                                                    <div className={`w-14 h-14 rounded-2xl ${style.bg} flex items-center justify-center ${style.text} border ${style.border} text-xl shadow-sm`}>
-                                                        {style.icon}
-                                                    </div>
-                                                </div>
-                                                <p className="text-[var(--text-secondary)] text-lg font-bold mb-10 leading-relaxed opacity-60 tracking-tight">{vuln.description}</p>
-                                                <div className="pt-8 border-t border-[var(--border-color)]">
-                                                    <p className="text-[10px] font-black text-[var(--primary-blue)] uppercase tracking-widest mb-4 opacity-40">Remediation Guide</p>
-                                                    <div className="bg-white p-6 rounded-2xl border border-[var(--border-color)] font-bold text-xs text-[var(--text-primary)] leading-relaxed shadow-sm">
-                                                        {vuln.remediation}
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        );
-                                    })}
-                                    {scanResult.vulnerabilities.length === 0 && (
-                                        <div className="text-center py-20 px-10 bg-emerald-50/50 border border-emerald-100 rounded-[3rem]">
-                                            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-md border border-emerald-100">
-                                                <FiCheckCircle className="text-emerald-500 text-3xl" />
+                                <div className="pro-card p-10 bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)]">
+                                    <h3 className="text-sm font-black text-[var(--text-primary)] mb-8 flex items-center gap-3 uppercase tracking-tight">
+                                        <FiCheckCircle className="text-emerald-500" /> SSL Certificate
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {[
+                                            { label: 'Status', val: scanResult.ssl.valid ? 'Active' : 'Expired', color: scanResult.ssl.valid ? 'text-emerald-600' : 'text-red-500' },
+                                            { label: 'Expires', val: isAuthenticated ? new Date(scanResult.ssl.validTo).toLocaleDateString() : 'XX/XX/XXXX', color: 'text-[var(--text-primary)]' },
+                                            { label: 'Remaining', val: isAuthenticated ? `${scanResult.ssl.daysRemaining} Days` : '--- Days', color: 'text-[var(--primary-blue)]' },
+                                        ].map((item, i) => (
+                                            <div key={i} className="flex justify-between items-center p-5 bg-[var(--bg-secondary)] rounded-2xl border border-transparent hover:border-[var(--border-color)] transition-all">
+                                                <span className="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-40">{item.label}</span>
+                                                <span className={`text-[11px] font-black ${item.color}`}>{item.val}</span>
                                             </div>
-                                            <h4 className="text-emerald-900 font-black text-3xl tracking-tight uppercase">Safe Configuration</h4>
-                                            <p className="text-emerald-700 font-bold text-base mt-4 opacity-70">No critical vulnerabilities detected on this domain.</p>
-                                        </div>
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="pro-card p-10 md:p-16 bg-white border border-[var(--border-color)]">
-                                <h3 className="text-2xl font-black text-[var(--text-primary)] mb-12 flex items-center gap-4 uppercase tracking-tight leading-none">
-                                    <FiActivity className="text-[var(--primary-blue)]" /> Security Headers
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {Object.entries(scanResult.headers).map(([name, data]) => (
-                                        <div key={name} className="p-8 bg-[var(--bg-secondary)] rounded-2xl border border-transparent transition-all hover:bg-white hover:shadow-2xl hover:border-[var(--border-color)]">
-                                            <div className="flex items-center justify-between mb-6">
-                                                <span className="text-[9px] font-black text-[var(--text-secondary)] truncate pr-4 opacity-40 uppercase tracking-widest">{name}</span>
-                                                <div className={`w-3 h-3 rounded-full ${data.present ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]'}`}></div>
-                                            </div>
-                                            <p className={`text-[10px] font-black uppercase tracking-widest ${data.present ? 'text-emerald-600' : 'text-red-500'}`}>
-                                                {data.present ? 'Verified' : 'Missing Requirement'}
-                                            </p>
-                                            {data.present && data.value && (
-                                                <div className="mt-6 p-4 bg-white/50 rounded-xl text-[9px] font-bold text-[var(--text-secondary)] break-all border border-[var(--border-color)]/30 leading-normal font-mono opacity-60">
-                                                    {data.value}
+                            {/* Details Column */}
+                            <div className="lg:col-span-8 space-y-10">
+                                <div className="pro-card p-10 md:p-16 bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)]">
+                                    <h3 className="text-2xl font-black text-[var(--text-primary)] mb-12 flex items-center gap-4 uppercase tracking-tight leading-none">
+                                        <FiAlertTriangle className="text-amber-500" /> Critical Findings
+                                    </h3>
+                                    <div className="space-y-8">
+                                        {(isAuthenticated ? scanResult.vulnerabilities : [
+                                            { type: 'PROTECTED_SCAN_DATA', severity: 'CRITICAL', description: 'Authenticate to view the full security analysis report.', remediation: 'Sign up for a free account.' }
+                                        ]).map((vuln, i) => {
+                                            const style = getSeverityStyles(vuln.severity);
+                                            return (
+                                                <motion.div
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    key={i}
+                                                    className="p-8 bg-[var(--bg-secondary)] rounded-[2rem] border border-transparent hover:border-[var(--border-color)] hover:bg-white dark:hover:bg-black/20 hover:shadow-2xl transition-all duration-300"
+                                                >
+                                                    <div className="flex items-start justify-between gap-6 mb-8">
+                                                        <div>
+                                                            <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black mb-4 inline-block uppercase tracking-widest ${style.bg} ${style.text} border ${style.border}`}>
+                                                                {vuln.severity}
+                                                            </span>
+                                                            <h4 className="text-[var(--text-primary)] font-black text-2xl tracking-tight uppercase leading-none">{vuln.type}</h4>
+                                                        </div>
+                                                        <div className={`w-14 h-14 rounded-2xl ${style.bg} flex items-center justify-center ${style.text} border ${style.border} text-xl shadow-sm`}>
+                                                            {style.icon}
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-[var(--text-secondary)] text-lg font-bold mb-10 leading-relaxed opacity-60 tracking-tight">{vuln.description}</p>
+                                                    <div className="pt-8 border-t border-[var(--border-color)]">
+                                                        <p className="text-[10px] font-black text-[var(--primary-blue)] uppercase tracking-widest mb-4 opacity-40">Remediation Guide</p>
+                                                        <div className="bg-white dark:bg-black/20 p-6 rounded-2xl border border-[var(--border-color)] font-bold text-xs text-[var(--text-primary)] leading-relaxed shadow-sm">
+                                                            {vuln.remediation}
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
+                                        {isAuthenticated && scanResult.vulnerabilities.length === 0 && (
+                                            <div className="text-center py-20 px-10 bg-emerald-50/50 border border-emerald-100 rounded-[3rem]">
+                                                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-md border border-emerald-100">
+                                                    <FiCheckCircle className="text-emerald-500 text-3xl" />
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                                <h4 className="text-emerald-900 font-black text-3xl tracking-tight uppercase">Safe Configuration</h4>
+                                                <p className="text-emerald-700 font-bold text-base mt-4 opacity-70">No critical vulnerabilities detected on this domain.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="pro-card p-10 md:p-16 bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)]">
+                                    <h3 className="text-2xl font-black text-[var(--text-primary)] mb-12 flex items-center gap-4 uppercase tracking-tight leading-none">
+                                        <FiActivity className="text-[var(--primary-blue)]" /> Security Headers
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {(isAuthenticated ? Object.entries(scanResult.headers) : Object.entries({ 'X-Frame-Options': { present: false }, 'Content-Security-Policy': { present: false } })).map(([name, data]) => (
+                                            <div key={name} className="p-8 bg-[var(--bg-secondary)] rounded-2xl border border-transparent transition-all hover:bg-white dark:hover:bg-black/20 hover:shadow-2xl hover:border-[var(--border-color)]">
+                                                <div className="flex items-center justify-between mb-6">
+                                                    <span className="text-[9px] font-black text-[var(--text-secondary)] truncate pr-4 opacity-40 uppercase tracking-widest">{name}</span>
+                                                    <div className={`w-3 h-3 rounded-full ${data.present ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.5)]'}`}></div>
+                                                </div>
+                                                <p className={`text-[10px] font-black uppercase tracking-widest ${data.present ? 'text-emerald-600' : 'text-red-500'}`}>
+                                                    {data.present ? 'Verified' : 'Missing Requirement'}
+                                                </p>
+                                                {data.present && data.value && (
+                                                    <div className="mt-6 p-4 bg-white/50 dark:bg-black/20 rounded-xl text-[9px] font-bold text-[var(--text-secondary)] break-all border border-[var(--border-color)]/30 leading-normal font-mono opacity-60">
+                                                        {data.value}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </motion.div>

@@ -1,20 +1,20 @@
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Activity, CheckCircle, Database } from 'lucide-react';
+import { Mail, Phone, MapPin, Activity, CheckCircle, Database, Lock, ArrowRight } from 'lucide-react';
 import CompanyHeader from './CompanyHeader';
 import SocialMediaCard from './SocialMediaCard';
 import ExportButtons from './ExportButtons';
 
-const DataSection = ({ title, icon: Icon, items }) => {
+const DataSection = ({ title, icon: Icon, items, isAuthenticated }) => {
     if (!items || items.length === 0) return null;
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="pro-card p-8 bg-white border border-[var(--border-color)] h-full shadow-xl hover:shadow-2xl transition-all duration-500"
+            className="pro-card p-8 bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)] h-full shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden"
         >
             <div className="flex items-center gap-5 mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-[var(--bg-secondary)] flex items-center justify-center border border-[var(--border-color)] group-hover:bg-black transition-colors">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--bg-secondary)] flex items-center justify-center border border-[var(--border-color)]">
                     <Icon className="w-6 h-6 text-[var(--primary-blue)]" />
                 </div>
                 <div>
@@ -27,10 +27,12 @@ const DataSection = ({ title, icon: Icon, items }) => {
                 {items.map((item, index) => (
                     <div
                         key={index}
-                        className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-secondary)] border border-transparent hover:border-[var(--primary-blue)]/10 transition-all group/item"
+                        className="flex items-center gap-4 p-4 rounded-xl bg-[var(--bg-secondary)] border border-transparent hover:border-[var(--primary-blue)]/10 transition-all group/item overflow-hidden"
                     >
                         <div className="w-2 h-2 rounded-full bg-[var(--primary-blue)]/20 group-hover/item:bg-[var(--primary-blue)] transition-all"></div>
-                        <span className="text-[var(--text-secondary)] text-[13px] font-bold break-all group-hover:text-[var(--text-primary)] transition-colors">{item}</span>
+                        <span className={`text-[var(--text-secondary)] text-[13px] font-bold break-all group-hover:text-[var(--text-primary)] transition-colors ${!isAuthenticated ? 'blur-[5px] select-none pointer-events-none' : ''}`}>
+                            {isAuthenticated ? item : 'PROTECTED_DATA_VALUE_HIDDEN'}
+                        </span>
                     </div>
                 ))}
             </div>
@@ -38,83 +40,116 @@ const DataSection = ({ title, icon: Icon, items }) => {
     );
 };
 
-const ResultsDisplay = ({ data, onNotification }) => {
+const ResultsDisplay = ({ data, onNotification, isAuthenticated, onOpenAuth }) => {
     if (!data) return null;
 
     return (
-        <div className="w-full max-w-7xl mx-auto pt-14 pb-24 px-6 font-sans">
-            {/* Header / Summary */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-10 mb-16">
-                <div className="max-w-2xl text-center md:text-left">
-                    <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                        <CheckCircle className="w-5 h-5 text-emerald-500" />
-                        <span className="text-sm font-semibold text-emerald-600">Successfully Extracted</span>
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
-                        Data <span className="text-[var(--primary-blue)]">Results</span>
-                    </h2>
-                    <p className="text-[var(--text-secondary)] text-lg">Extraction complete. Here are the contact details and information found on the target website.</p>
-                </div>
-
-                <div className="flex items-center gap-10 px-8 py-5 bg-white border border-[var(--border-color)] rounded-2xl shadow-sm relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-blue-50/30 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="text-center relative z-10">
-                        <p className="text-3xl font-bold text-[var(--text-primary)]">{(data.phones?.length || 0) + (data.emails?.length || 0) + (data.addresses?.length || 0)}</p>
-                        <p className="text-xs font-semibold text-[var(--text-secondary)]">Total Points</p>
-                    </div>
-                    <div className="w-px h-10 bg-[var(--border-color)] relative z-10"></div>
-                    <div className="text-center relative z-10">
-                        <p className="text-3xl font-bold text-[var(--primary-blue)]">{(data.companyInfo ? 1 : 0) + Object.keys(data.socialMedia || {}).filter(k => data.socialMedia[k]?.length).length}</p>
-                        <p className="text-xs font-semibold text-[var(--text-secondary)]">Company Info</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-16">
-                {/* Profile Section */}
-                {data.companyInfo && (
-                    <div className="pro-card p-1 bg-[var(--bg-secondary)] overflow-hidden">
-                        <CompanyHeader data={data} />
-                    </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <DataSection
-                        title="Phone Numbers"
-                        icon={Phone}
-                        items={data.phones}
-                    />
-                    <DataSection
-                        title="Email Addresses"
-                        icon={Mail}
-                        items={data.emails}
-                    />
-                    <DataSection
-                        title="Locations"
-                        icon={MapPin}
-                        items={data.addresses}
-                    />
-                </div>
-
-                {/* Digital Footprint Section */}
-                {data.socialMedia && <SocialMediaCard data={data} />}
-
-                {/* Technical Footprint / Export */}
-                <div className="pro-card p-10 bg-white border border-[var(--border-color)] relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-50 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-
-                    <div className="flex flex-col lg:flex-row items-center justify-between gap-10 relative z-10 text-center lg:text-left">
-                        <div className="max-w-xl">
-                            <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
-                                <Database className="w-5 h-5 text-[var(--primary-blue)]" />
-                                <span className="text-sm font-semibold text-[var(--primary-blue)]">Export Options</span>
-                            </div>
-                            <h4 className="text-2xl font-bold mb-2">Download Extracted Data</h4>
-                            <p className="text-[var(--text-secondary)] text-sm">Save your results for later use in CSV, JSON, or PDF formats.</p>
+        <div className="w-full max-w-7xl mx-auto pt-14 pb-24 px-6 font-sans relative">
+            {!isAuthenticated && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none" style={{ marginTop: '200px' }}>
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-10 bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)] rounded-[3rem] shadow-2xl text-center max-w-lg mx-auto pointer-events-auto sticky top-[40vh]"
+                    >
+                        <div className="w-20 h-20 bg-blue-50 dark:bg-blue-500/10 text-[var(--primary-blue)] rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
+                            <Lock size={32} />
                         </div>
+                        <h3 className="text-3xl font-black text-[var(--text-primary)] mb-6 uppercase tracking-tighter">Access <span className="text-[var(--primary-blue)]">Restricted</span></h3>
+                        <p className="text-[var(--text-secondary)] text-lg font-bold leading-relaxed opacity-60 mb-10">
+                            Authentication is required to view and export full extraction results. Create a free account to unlock all data points.
+                        </p>
+                        <button
+                            onClick={onOpenAuth}
+                            className="w-full pro-button pro-button-primary !py-5 flex items-center justify-center gap-4 text-sm font-black uppercase tracking-widest shadow-xl"
+                        >
+                            Sign In to Unlock Data
+                            <ArrowRight size={18} />
+                        </button>
+                        <p className="mt-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-30">
+                            Secure Enterprise Protocol v2.5.1 Active
+                        </p>
+                    </motion.div>
+                </div>
+            )}
 
-                        <div className="w-full lg:w-auto">
-                            <ExportButtons data={data} onNotification={onNotification} />
+            <div className={`${!isAuthenticated ? 'blur-[8px] select-none pointer-events-none opacity-40 transition-all duration-700' : 'transition-all duration-700'}`}>
+                {/* Header / Summary */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-10 mb-16">
+                    <div className="max-w-2xl text-center md:text-left">
+                        <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
+                            <CheckCircle className="w-5 h-5 text-emerald-500" />
+                            <span className="text-sm font-semibold text-emerald-600">Successfully Extracted</span>
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
+                            Data <span className="text-[var(--primary-blue)]">Results</span>
+                        </h2>
+                        <p className="text-[var(--text-secondary)] text-lg">Extraction complete. Here are the contact details and information found on the target website.</p>
+                    </div>
+
+                    <div className="flex items-center gap-10 px-8 py-5 bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl shadow-sm relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-blue-50/30 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="text-center relative z-10">
+                            <p className="text-3xl font-bold text-[var(--text-primary)]">{(data.phones?.length || 0) + (data.emails?.length || 0) + (data.addresses?.length || 0)}</p>
+                            <p className="text-xs font-semibold text-[var(--text-secondary)]">Total Points</p>
+                        </div>
+                        <div className="w-px h-10 bg-[var(--border-color)] relative z-10"></div>
+                        <div className="text-center relative z-10">
+                            <p className="text-3xl font-bold text-[var(--primary-blue)]">{(data.companyInfo ? 1 : 0) + Object.keys(data.socialMedia || {}).filter(k => data.socialMedia[k]?.length).length}</p>
+                            <p className="text-xs font-semibold text-[var(--text-secondary)]">Company Info</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-16">
+                    {/* Profile Section */}
+                    {data.companyInfo && (
+                        <div className="pro-card p-1 bg-[var(--bg-secondary)] overflow-hidden">
+                            <CompanyHeader data={data} isAuthenticated={isAuthenticated} />
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <DataSection
+                            title="Phone Numbers"
+                            icon={Phone}
+                            items={data.phones}
+                            isAuthenticated={isAuthenticated}
+                        />
+                        <DataSection
+                            title="Email Addresses"
+                            icon={Mail}
+                            items={data.emails}
+                            isAuthenticated={isAuthenticated}
+                        />
+                        <DataSection
+                            title="Locations"
+                            icon={MapPin}
+                            items={data.addresses}
+                            isAuthenticated={isAuthenticated}
+                        />
+                    </div>
+
+                    {/* Digital Footprint Section */}
+                    {data.socialMedia && <SocialMediaCard data={data} isAuthenticated={isAuthenticated} />}
+
+                    {/* Technical Footprint / Export */}
+                    <div className="pro-card p-10 bg-white dark:bg-[var(--card-bg)] border border-[var(--border-color)] relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-50 dark:bg-blue-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+
+                        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 relative z-10 text-center lg:text-left">
+                            <div className="max-w-xl">
+                                <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
+                                    <Database className="w-5 h-5 text-[var(--primary-blue)]" />
+                                    <span className="text-sm font-semibold text-[var(--primary-blue)]">Export Options</span>
+                                </div>
+                                <h4 className="text-2xl font-bold mb-2">Download Extracted Data</h4>
+                                <p className="text-[var(--text-secondary)] text-sm">Save your results for later use in CSV, JSON, or PDF formats.</p>
+                            </div>
+
+                            <div className="w-full lg:w-auto">
+                                <ExportButtons data={data} onNotification={onNotification} isAuthenticated={isAuthenticated} />
+                            </div>
                         </div>
                     </div>
                 </div>
