@@ -20,6 +20,7 @@ import ApiDocsPage from './pages/ApiDocsPage';
 import SecurityScannerPage from './pages/SecurityScannerPage';
 import SiteIntelligence from './pages/SiteIntelligence';
 import AdvancedScanner from './components/AdvancedScanner';
+import DeepIntelligence from './pages/DeepIntelligence';
 import Toast from './components/Toast';
 
 // Scroll to top component
@@ -33,7 +34,7 @@ const ScrollToTop = () => {
 
 function App() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
-    const [view, setView] = useState('home'); // 'home', 'history', 'api', etc.
+    const [view, setView] = useState('home');
     const [notification, setNotification] = useState(null);
     const [pendingUrl, setPendingUrl] = useState(null);
 
@@ -58,6 +59,7 @@ function App() {
                     onOpenSecurity={() => setView('security')}
                     onOpenIP={() => setView('ip')}
                     onOpenAdvanced={() => setView('advanced-scan')}
+                    onOpenDeep={() => setView('deep-intel')}
                 >
                     <div className="w-full">
                         {view === 'history' ? (
@@ -74,6 +76,8 @@ function App() {
                             <SiteIntelligence onBack={() => setView('home')} onOpenAuth={() => setIsAuthOpen(true)} />
                         ) : view === 'advanced-scan' ? (
                             <AdvancedScanner onBack={() => setView('home')} onOpenAuth={() => setIsAuthOpen(true)} />
+                        ) : view === 'deep-intel' ? (
+                            <DeepIntelligence onBack={() => setView('home')} onOpenAuth={() => setIsAuthOpen(true)} />
                         ) : (
                             <Routes>
                                 <Route

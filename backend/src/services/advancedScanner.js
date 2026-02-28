@@ -2,6 +2,7 @@
 // advancedScanner.js — Deep Website Analysis
 // ================================================================
 import dns from 'dns';
+import axios from 'axios';
 import { promisify } from 'util';
 import https from 'https';
 import http from 'http';
@@ -30,6 +31,7 @@ export const deepWebsiteAnalysis = async (url) => {
         openPorts: null,
         technologies: null,
         firewall: null,
+        robots: null,
     };
 
     try {
@@ -129,6 +131,17 @@ export const deepWebsiteAnalysis = async (url) => {
             const openPorts = await scanCommonPorts(result.websiteIP.primaryIP);
             result.openPorts = openPorts;
             console.log(`  ✅ Open Ports: ${openPorts.open.join(', ') || 'None detected'}`);
+        }
+
+        // ── 10. Fetch Robots.txt ────────────────────────────────
+        console.log(`  🤖 Fetching robots.txt permissions...`);
+        try {
+            const robotsRes = await axios.get(`${urlObj.origin}/robots.txt`, { timeout: 5000 });
+            result.robots = robotsRes.data;
+            console.log(`  ✅ Robots.txt fetched (${result.robots.length} chars)`);
+        } catch (err) {
+            result.robots = 'robots.txt not found or inaccessible';
+            console.log(`  ⚠️ Robots.txt not found`);
         }
 
     } catch (error) {

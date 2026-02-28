@@ -18,10 +18,10 @@ export const extractData = async (req, res) => {
             });
         }
 
-        // Scrape website
+        // Scrape website with high fidelity
         const scraped = await scrapeWebsite(url);
 
-        // Extractions
+        // Extractions from content
         const phones = extractPhones(scraped.text);
         const emails = extractEmails(scraped.text);
         const addresses = extractAddresses(scraped.text);
@@ -33,7 +33,14 @@ export const extractData = async (req, res) => {
         // Send response first
         res.json({
             success: true,
-            data: { phones, emails, addresses, companyInfo, socialMedia },
+            data: {
+                phones,
+                emails,
+                addresses,
+                companyInfo,
+                socialMedia,
+                screenshot: scraped.screenshot || null
+            },
             count: {
                 phones: phones.length,
                 emails: emails.length,
@@ -62,7 +69,14 @@ export const extractData = async (req, res) => {
                     userId: uid,
                     url,
                     type: 'single',
-                    data: { phones, emails, addresses, companyInfo, socialMedia },
+                    data: {
+                        phones,
+                        emails,
+                        addresses,
+                        companyInfo,
+                        socialMedia,
+                        screenshot: scraped.screenshot || null
+                    },
                     count: {
                         phones: phones.length,
                         emails: emails.length,
@@ -110,6 +124,8 @@ import { promisify } from 'util';
 
 const lookup = promisify(dns.lookup);
 
+import { deepWebsiteAnalysis } from '../services/advancedScanner.js';
+
 export const extractSiteInfo = async (req, res) => {
     try {
         const { url } = req.body;
@@ -117,23 +133,13 @@ export const extractSiteInfo = async (req, res) => {
             return res.status(400).json({ success: false, error: 'URL is required' });
         }
 
-        const hostname = new URL(url).hostname;
-
-        // Parallel execution for performance
-        const [ipResult, robotsResult] = await Promise.allSettled([
-            lookup(hostname),
-            axios.get(`${new URL(url).origin}/robots.txt`, { timeout: 5000 })
-        ]);
-
-        const ip = ipResult.status === 'fulfilled' ? ipResult.value.address : 'Unable to resolve';
-        const robotsContent = robotsResult.status === 'fulfilled' ? robotsResult.value.data : 'robots.txt not found or inaccessible';
+        // Deep Analysis (Includes IP, DNS, SSL, Server info, Geolocation, Ports)
+        const analysis = await deepWebsiteAnalysis(url);
 
         res.json({
             success: true,
             data: {
-                hostname,
-                ip,
-                robots: robotsContent,
+                ...analysis,
                 timestamp: new Date().toISOString()
             }
         });

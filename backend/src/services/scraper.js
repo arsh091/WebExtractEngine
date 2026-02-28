@@ -100,7 +100,7 @@ async function tryPuppeteerAggressive(url) {
             const type = req.resourceType();
             const blockedTypes = ['image', 'stylesheet', 'font', 'media', 'websocket', 'manifest', 'other'];
             const url = req.url();
-            
+
             // Block ads, analytics, trackers
             if (
                 blockedTypes.includes(type) ||
@@ -119,7 +119,7 @@ async function tryPuppeteerAggressive(url) {
 
         // ── Navigate with retry ──────────────────────────────────
         console.log(`[Puppeteer] 🌐 Navigating to ${url}...`);
-        
+
         let navigationSuccess = false;
         for (let attempt = 1; attempt <= 2; attempt++) {
             try {
@@ -154,7 +154,7 @@ async function tryPuppeteerAggressive(url) {
                 );
             }, { timeout: 8000 }),
             new Promise(r => setTimeout(r, 8000)) // Max 8s wait
-        ]).catch(() => {});
+        ]).catch(() => { });
 
         // Scroll the entire page to load lazy content
         await aggressiveScroll(page);
@@ -256,13 +256,13 @@ async function tryPuppeteerAggressive(url) {
         // ── Assemble ultra-rich content ──────────────────────────
         const richContent = [
             '=== MAILTO LINKS ===',
-            extracted.mailtoLinks.join('\n'),
+            extracted.mailtoLinks.map(l => `href="mailto:${l}"`).join('\n'),
             '',
             '=== TEL LINKS ===',
-            extracted.telLinks.join('\n'),
+            extracted.telLinks.map(l => `href="tel:${l}"`).join('\n'),
             '',
             '=== WHATSAPP LINKS ===',
-            extracted.waLinks.join('\n'),
+            extracted.waLinks.map(l => `href="${l}"`).join('\n'),
             '',
             '=== DATA ATTRIBUTES ===',
             'Phones: ' + extracted.dataPhones.join(', '),
@@ -274,8 +274,8 @@ async function tryPuppeteerAggressive(url) {
             '=== ADDRESS TAGS ===',
             extracted.addressTags.join('\n'),
             '',
-            '=== JSON-LD ===',
-            extracted.jsonLdScripts.join('\n'),
+            '=== JSON-LD DATA ===',
+            extracted.jsonLdScripts.join('\n\n'),
             '',
             '=== META ===',
             extracted.metaDescription,
@@ -288,22 +288,35 @@ async function tryPuppeteerAggressive(url) {
             extracted.allBodyText,
         ].join('\n');
 
-        console.log(`[Puppeteer] ✅ Extracted ${richContent.length} chars`);
-        console.log(`[Puppeteer] 📊 Found: ${extracted.mailtoLinks.length} emails, ${extracted.telLinks.length} phones, ${extracted.waLinks.length} WhatsApp`);
+        console.log(`[Puppeteer] ✅ Rich Content: ${richContent.length} chars | HTML: ${extracted.html.length} chars`);
+        console.log(`[Puppeteer] 📊 Found: ${extracted.mailtoLinks.length} emails, ${extracted.telLinks.length} phones`);
+
+        // ── CAPTURE SCREENSHOT ────────────────────────────────────
+        console.log(`[Puppeteer] 📸 Capturing visual snapshot...`);
+        const screenshotBuf = await page.screenshot({
+            type: 'jpeg',
+            quality: 60,
+            fullPage: false,
+            encoding: 'base64'
+        }).catch(err => {
+            console.log(`[Puppeteer] ⚠️ Screenshot failed: ${err.message}`);
+            return null;
+        });
 
         await page.close();
         browserUseCount++;
 
         return {
+            success: true,
             text: richContent,
             html: extracted.html,
+            screenshot: screenshotBuf ? `data:image/jpeg;base64,${screenshotBuf}` : null,
             url,
             method: 'puppeteer-aggressive',
             stats: {
                 mailtoCount: extracted.mailtoLinks.length,
                 telCount: extracted.telLinks.length,
-                waCount: extracted.waLinks.length,
-                contactSections: extracted.targetSections.length,
+                waCount: extracted.waLinks.length
             }
         };
 
@@ -313,7 +326,7 @@ async function tryPuppeteerAggressive(url) {
     } finally {
         if (browserUseCount >= BROWSER_RECYCLE_AFTER && sharedBrowser) {
             console.log(`[Puppeteer] ♻️  Recycling browser...`);
-            try { await sharedBrowser.close(); } catch (_) {}
+            try { await sharedBrowser.close(); } catch (_) { }
             sharedBrowser = null;
             browserUseCount = 0;
         }
@@ -404,7 +417,7 @@ async function aggressiveScroll(page) {
         });
         // Scroll back to top
         await page.evaluate(() => window.scrollTo(0, 0));
-    } catch (_) {}
+    } catch (_) { }
 }
 
 // ── Click "Show phone", "View contact", etc. buttons ─────────────
@@ -413,7 +426,7 @@ async function clickContactRevealButtons(page) {
         await page.evaluate(() => {
             const keywords = ['show contact', 'view phone', 'reveal number', 'call now', 'contact us', 'get phone', 'show number'];
             const buttons = Array.from(document.querySelectorAll('button, a, span, div'));
-            
+
             buttons.forEach(btn => {
                 const text = (btn.innerText || '').toLowerCase();
                 const title = (btn.title || '').toLowerCase();
@@ -423,13 +436,13 @@ async function clickContactRevealButtons(page) {
                 if (keywords.some(kw => combined.includes(kw))) {
                     try {
                         btn.click();
-                    } catch (_) {}
+                    } catch (_) { }
                 }
             });
         });
         // Wait for content to appear after click
         await new Promise(r => setTimeout(r, 2000));
-    } catch (_) {}
+    } catch (_) { }
 }
 
 // ================================================================
@@ -473,9 +486,9 @@ function buildRichResult(rawHtml, url, method) {
     const bodyText = $('body').text().replace(/\s+/g, ' ').trim();
 
     const richText = [
-        '=== MAILTO ===', mailtoLinks.join('\n'),
-        '=== TEL ===', telLinks.join('\n'),
-        '=== WHATSAPP ===', waLinks.join('\n'),
+        '=== MAILTO ===', mailtoLinks.map(l => `href="${l}"`).join('\n'),
+        '=== TEL ===', telLinks.map(l => `href="${l}"`).join('\n'),
+        '=== WHATSAPP ===', waLinks.map(l => `href="${l}"`).join('\n'),
         '=== SECTIONS ===', sections.join('\n\n'),
         '=== BODY ===', bodyText,
     ].join('\n');
@@ -487,7 +500,10 @@ function buildRichResult(rawHtml, url, method) {
 // UTILITIES
 // ================================================================
 function isContentUseful(text) {
-    return text && text.trim().length > 1000;
+    // Increased threshold and check for common JS patterns
+    if (!text || text.trim().length < 2000) return false;
+    if (text.includes('Loading...') || text.includes('Please wait...') || text.includes('JavaScript is required')) return false;
+    return true;
 }
 
 // Graceful shutdown

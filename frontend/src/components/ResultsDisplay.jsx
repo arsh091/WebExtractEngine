@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Activity, CheckCircle, Database, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Phone, MapPin, Activity, CheckCircle, Database, Lock, ArrowRight, Cpu, Layers, Shield, ShieldCheck } from 'lucide-react';
 import CompanyHeader from './CompanyHeader';
 import SocialMediaCard from './SocialMediaCard';
 import ExportButtons from './ExportButtons';

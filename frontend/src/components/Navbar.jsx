@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const Navbar = ({ onOpenHistory, onOpenAuth, onOpenApi, onOpenSecurity, onOpenIP, onOpenAdvanced }) => {
+const Navbar = ({ onOpenHistory, onOpenAuth, onOpenApi, onOpenSecurity, onOpenIP, onOpenAdvanced, onOpenDeep }) => {
+    // ... (rest of component uses onOpenDeep)
     const navRef = useRef(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -33,6 +34,7 @@ const Navbar = ({ onOpenHistory, onOpenAuth, onOpenApi, onOpenSecurity, onOpenIP
     }, []);
 
     const navLinks = [
+        { name: 'Intelligence', onClick: onOpenDeep },
         { name: 'Infrastructure', onClick: onOpenIP },
         { name: 'Deep Scan', onClick: onOpenAdvanced },
         { name: 'Security', onClick: onOpenSecurity },

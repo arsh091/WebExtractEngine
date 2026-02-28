@@ -2,7 +2,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import CookieBanner from './CookieBanner';
 
-const Layout = ({ children, onOpenHistory, onOpenAuth, onOpenApi, onOpenSecurity, onOpenIP, onOpenAdvanced }) => {
+const Layout = ({ children, onOpenHistory, onOpenAuth, onOpenApi, onOpenSecurity, onOpenIP, onOpenAdvanced, onOpenDeep }) => {
     return (
         <div className="min-h-screen bg-[var(--bg-main)] transition-colors duration-500 overflow-x-hidden">
             <Navbar
@@ -12,6 +12,7 @@ const Layout = ({ children, onOpenHistory, onOpenAuth, onOpenApi, onOpenSecurity
                 onOpenSecurity={onOpenSecurity}
                 onOpenIP={onOpenIP}
                 onOpenAdvanced={onOpenAdvanced}
+                onOpenDeep={onOpenDeep}
             />
             <main className="relative">
                 {children}
