@@ -52,7 +52,7 @@ const Hero = () => {
     }, []);
 
     return (
-        <section ref={heroRef} className="relative pt-48 pb-32 px-6 flex flex-col items-center text-center overflow-hidden">
+        <section ref={heroRef} className="relative min-h-[75vh] md:min-h-[85vh] flex flex-col items-center justify-center text-center overflow-hidden px-4">
             {/* Background Decorations */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 flex justify-center overflow-hidden pointer-events-none">
                 <div className="w-[1200px] h-[800px] bg-blue-50/50 rounded-full blur-[150px] -translate-y-1/2 opacity-60"></div>
@@ -69,8 +69,8 @@ const Hero = () => {
                 </div>
 
                 {/* Title */}
-                <h1 className="hero-title text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-[var(--text-primary)] mb-6 leading-tight">
-                    Reliable <span className="text-[var(--primary-blue)]">Web Data</span><br />
+                <h1 className="hero-title text-5xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tight text-[var(--text-primary)] mb-8 leading-[1.1]">
+                    Reliable <span className="text-[var(--primary-blue)]">Web Data</span><br className="hidden md:block" />
                     At Your Fingertips
                 </h1>
 
@@ -104,9 +104,9 @@ const Hero = () => {
                         <div className="p-3 bg-blue-50 text-[var(--primary-blue)] rounded-xl transition-all duration-300 group-hover:bg-[var(--primary-blue)] group-hover:text-white">
                             <stat.icon size={20} />
                         </div>
-                        <div className="text-center">
-                            <span className="text-sm font-bold text-[var(--text-primary)] block">{stat.label}</span>
-                            <span className="text-xs text-[var(--text-secondary)]">{stat.desc}</span>
+                        <div className="text-center mt-2">
+                            <span className="text-sm font-semibold text-[var(--text-primary)] block mb-1">{stat.label}</span>
+                            <span className="text-xs text-[var(--text-secondary)] block px-2">{stat.desc}</span>
                         </div>
                     </div>
                 ))}

@@ -9,6 +9,7 @@ import ApiReference from './pages/ApiReference';
 import Community from './pages/Community';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import Cookies from './pages/Cookies';
 import Security from './pages/Security';
 
 // Components
@@ -17,7 +18,7 @@ import AuthModal from './components/AuthModal';
 import HistoryPage from './pages/HistoryPage';
 import ApiDocsPage from './pages/ApiDocsPage';
 import SecurityScannerPage from './pages/SecurityScannerPage';
-import IPIntelligence from './components/IPIntelligence';
+import SiteIntelligence from './pages/SiteIntelligence';
 import AdvancedScanner from './components/AdvancedScanner';
 import Toast from './components/Toast';
 
@@ -34,10 +35,16 @@ function App() {
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [view, setView] = useState('home'); // 'home', 'history', 'api', etc.
     const [notification, setNotification] = useState(null);
+    const [pendingUrl, setPendingUrl] = useState(null);
 
     const showNotification = (message, type = 'success') => {
         setNotification({ message, type });
         setTimeout(() => setNotification(null), 4000);
+    };
+
+    const handleReExtract = (url) => {
+        setPendingUrl(url);
+        setView('home');
     };
 
     return (
@@ -56,17 +63,14 @@ function App() {
                         {view === 'history' ? (
                             <HistoryPage
                                 onBack={() => setView('home')}
-                                onReExtract={(url) => {
-                                    setView('home');
-                                    // Handle re-extraction logic if needed or just scroll to form
-                                }}
+                                onReExtract={handleReExtract}
                             />
                         ) : view === 'api' ? (
                             <ApiDocsPage onBack={() => setView('home')} />
                         ) : view === 'security' ? (
                             <SecurityScannerPage onBack={() => setView('home')} />
                         ) : view === 'ip' ? (
-                            <IPIntelligence onBack={() => setView('home')} />
+                            <SiteIntelligence onBack={() => setView('home')} />
                         ) : view === 'advanced-scan' ? (
                             <AdvancedScanner onBack={() => setView('home')} />
                         ) : (
@@ -77,6 +81,8 @@ function App() {
                                         <Home
                                             onNotification={showNotification}
                                             onOpenHistory={() => setView('history')}
+                                            urlToAutoExtract={pendingUrl}
+                                            clearAutoExtract={() => setPendingUrl(null)}
                                         />
                                     }
                                 />
@@ -85,6 +91,7 @@ function App() {
                                 <Route path="/community" element={<Community />} />
                                 <Route path="/privacy" element={<Privacy />} />
                                 <Route path="/terms" element={<Terms />} />
+                                <Route path="/cookies" element={<Cookies />} />
                                 <Route path="/security" element={<Security />} />
                             </Routes>
                         )}

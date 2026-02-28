@@ -42,7 +42,7 @@ const ResultsDisplay = ({ data, onNotification }) => {
     if (!data) return null;
 
     return (
-        <div className="w-full max-w-7xl mx-auto py-24 px-6 font-sans">
+        <div className="w-full max-w-7xl mx-auto pt-14 pb-24 px-6 font-sans">
             {/* Header / Summary */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-10 mb-16">
                 <div className="max-w-2xl text-center md:text-left">

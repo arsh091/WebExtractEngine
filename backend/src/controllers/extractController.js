@@ -103,3 +103,46 @@ export const testExtraction = (req, res) => {
         message: 'Extract controller is connected (Firebase Node)'
     });
 };
+
+import dns from 'dns';
+import axios from 'axios';
+import { promisify } from 'util';
+
+const lookup = promisify(dns.lookup);
+
+export const extractSiteInfo = async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url) {
+            return res.status(400).json({ success: false, error: 'URL is required' });
+        }
+
+        const hostname = new URL(url).hostname;
+
+        // Parallel execution for performance
+        const [ipResult, robotsResult] = await Promise.allSettled([
+            lookup(hostname),
+            axios.get(`${new URL(url).origin}/robots.txt`, { timeout: 5000 })
+        ]);
+
+        const ip = ipResult.status === 'fulfilled' ? ipResult.value.address : 'Unable to resolve';
+        const robotsContent = robotsResult.status === 'fulfilled' ? robotsResult.value.data : 'robots.txt not found or inaccessible';
+
+        res.json({
+            success: true,
+            data: {
+                hostname,
+                ip,
+                robots: robotsContent,
+                timestamp: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('Site Info Error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to fetch site information'
+        });
+    }
+};

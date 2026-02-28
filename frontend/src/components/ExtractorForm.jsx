@@ -49,17 +49,17 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
     };
 
     return (
-        <div ref={containerRef} className="w-full max-w-5xl mx-auto z-10 px-6">
-            <form onSubmit={handleSubmit} className="pro-card p-10 md:p-14 relative overflow-hidden bg-white shadow-2xl border border-[var(--border-color)]">
-                <div className="flex flex-col gap-10 relative z-10">
+        <div ref={containerRef} className="w-full max-w-5xl mx-auto z-10 px-4 md:px-6">
+            <form onSubmit={handleSubmit} className="pro-card p-6 sm:p-8 md:p-12 relative overflow-hidden bg-white shadow-xl border border-[var(--border-color)] mt-8 md:mt-0">
+                <div className="flex flex-col gap-8 md:gap-10 relative z-10">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center shadow-xl">
-                                <Globe className="w-7 h-7 text-white" />
+                        <div className="flex items-center gap-4 md:gap-5">
+                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-black flex items-center justify-center shadow-lg">
+                                <Globe className="w-6 h-6 md:w-7 md:h-7 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-[var(--text-primary)] font-bold text-2xl tracking-tight">Data Extractor</h3>
-                                <p className="text-[var(--text-secondary)] text-sm font-medium mt-1">Enter a URL to analyze</p>
+                                <h3 className="text-[var(--text-primary)] font-bold text-xl md:text-2xl tracking-tight">Data Extractor</h3>
+                                <p className="text-[var(--text-secondary)] text-xs md:text-sm font-medium mt-1">Enter a URL to analyze</p>
                             </div>
                         </div>
                         <div className="hidden md:block">
@@ -86,10 +86,12 @@ const ExtractorForm = ({ onExtract, onReset, loading, inputRef }) => {
                                 transition-all duration-300 outline-none`}
                             disabled={loading}
                         />
-                        <div className="text-red-500 text-sm mt-3 ml-2 font-medium flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                            Please enter a valid URL including http:// or https://
-                        </div>
+                        {!isValidUrl && (
+                            <div className="text-red-500 text-sm mt-3 ml-2 font-medium flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                Please enter a valid URL including http:// or https://
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-5">
